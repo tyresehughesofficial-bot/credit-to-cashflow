@@ -1,0 +1,1035 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Credit-to-Cashflow Blueprint™</title>
+
+<link rel="icon" href="favicon.ico" sizes="48x48">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+
+<meta property="og:title" content="Credit-to-Cashflow Blueprint™ – Get Funded. Get Free.">
+<meta property="og:description" content="Get approved for $50K+ in business funding and turn it into your first cashflow asset within 90 days.">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Credit-to-Cashflow Blueprint™ – Get Funded. Get Free.">
+<meta name="twitter:description" content="Get approved for $50K+ in business funding and turn it into your first cashflow asset within 90 days.">
+
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  /* ─── DARK (default) ─── */
+  :root {
+    --bg:           #0e0d0b;
+    --surface:      #161410;
+    --card:         #1e1b14;
+    --border:       #302c22;
+    --border-light: #3e3928;
+    --amber:        #FFCE85;
+    --amber-glow:   rgba(255,206,133,0.12);
+    --green:        #3ecf6e;
+    --green-text:   #3ecf6e;
+    --red:          #ff4444;
+    --muted:        #786e58;
+    --text:         #f2ede0;
+    --text-dim:     #c4b89a;
+    --text-dimmer:  #786e58;
+    --toggle-bg:    #302c22;
+    --toggle-icon:  #c4b89a;
+  }
+
+  /* ─── LIGHT ─── */
+  body.light {
+    --bg:           #faf7f0;
+    --surface:      #f2ece0;
+    --card:         #ebe4d4;
+    --border:       #d4c9b0;
+    --border-light: #bfb49a;
+    --amber:        #b08840;
+    --amber-glow:   rgba(176,136,64,0.09);
+    --green:        #166d34;
+    --green-text:   #166d34;
+    --red:          #c0392b;
+    --muted:        #7a7060;
+    --text:         #18160f;
+    --text-dim:     #3e3830;
+    --text-dimmer:  #7a7060;
+    --toggle-bg:    #e0d8c8;
+    --toggle-icon:  #3e3830;
+  }
+
+  *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Manrope', sans-serif;
+    font-size: 15px;
+    line-height: 1.72;
+    -webkit-font-smoothing: antialiased;
+    transition: background 0.25s, color 0.25s;
+  }
+
+  body::after {
+    content: '';
+    position: fixed; inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.025'/%3E%3C/svg%3E");
+    pointer-events: none; z-index: 9999; mix-blend-mode: overlay;
+  }
+
+  a { color: inherit; text-decoration: none; }
+
+  /* ─── NAV ─── */
+  nav {
+    position: sticky; top: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 15px 32px;
+    background: color-mix(in srgb, var(--bg) 88%, transparent);
+    backdrop-filter: blur(14px);
+    border-bottom: 1px solid var(--border);
+    transition: background 0.25s, border-color 0.25s;
+  }
+
+  .nav-logo {
+    display: flex; align-items: center; gap: 10px;
+    font-family: 'Lato', sans-serif;
+    font-size: 17px; font-weight: 700; letter-spacing: 3px;
+    text-transform: uppercase; color: var(--text);
+    transition: color 0.25s;
+  }
+  .nav-logo-icon { color: var(--amber); }
+
+  .nav-right { display: flex; align-items: center; gap: 10px; }
+
+  .theme-toggle {
+    width: 36px; height: 36px;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--toggle-bg);
+    border: 1px solid var(--border-light);
+    border-radius: 8px; cursor: pointer; flex-shrink: 0;
+    color: var(--toggle-icon);
+    transition: all 0.2s;
+  }
+  .theme-toggle:hover { border-color: var(--amber); color: var(--amber); }
+
+  .icon-moon { display: block; }
+  .icon-sun  { display: none; }
+  body.light .icon-moon { display: none; }
+  body.light .icon-sun  { display: block; }
+
+  .btn-nav {
+    font-family: 'Manrope', sans-serif;
+    font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;
+    background: var(--amber); color: #0e0d0b;
+    border: none; border-radius: 6px;
+    padding: 8px 18px; cursor: pointer; transition: all 0.2s;
+  }
+  .btn-nav:hover { filter: brightness(1.08); transform: translateY(-1px); box-shadow: 0 0 18px var(--amber-glow), 0 0 6px color-mix(in srgb, var(--amber) 40%, transparent); }
+
+  /* ─── PAGE ─── */
+  .page { max-width: 660px; margin: 0 auto; padding: 0 24px; }
+
+  .eyebrow {
+    font-size: 11px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase;
+    color: var(--text-dimmer); margin-bottom: 12px; transition: color 0.25s;
+  }
+
+  /* ─── HERO ─── */
+  .hero {
+    padding: 64px 0 52px;
+    border-bottom: 1px solid var(--border);
+    transition: border-color 0.25s;
+  }
+
+  .hero-icon { width: 44px; height: 44px; margin-bottom: 24px; color: var(--amber); transition: color 0.25s; }
+
+  .hero h1 {
+    font-family: 'Lato', sans-serif;
+    font-size: clamp(28px, 5vw, 40px); font-weight: 700;
+    line-height: 1.13; letter-spacing: -0.5px;
+    color: var(--text); margin-bottom: 18px; max-width: 560px;
+    transition: color 0.25s;
+  }
+  .hero h1 .accent { color: var(--amber); }
+
+  .hero-sub {
+    font-size: 15px; color: var(--text-dim);
+    max-width: 520px; margin-bottom: 14px; line-height: 1.75;
+    transition: color 0.25s;
+  }
+
+  .hero-bold {
+    font-size: 15px; font-weight: 600; color: var(--text);
+    max-width: 520px; margin-bottom: 30px; line-height: 1.75;
+    transition: color 0.25s;
+  }
+
+  .hero-microcopy {
+    font-size: 13px; color: var(--text-dimmer); margin-top: 12px;
+    transition: color 0.25s;
+  }
+
+  .btn-cta {
+    font-family: 'Manrope', sans-serif;
+    font-size: 14px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;
+    background: var(--amber); color: #0e0d0b;
+    border: none; border-radius: 6px;
+    padding: 13px 26px; cursor: pointer; transition: all 0.2s;
+    display: inline-block;
+  }
+  .btn-cta:hover { filter: brightness(1.08); transform: translateY(-1px); box-shadow: 0 0 24px var(--amber-glow), 0 0 8px color-mix(in srgb, var(--amber) 45%, transparent); }
+
+  /* ─── PROBLEM / SOLUTION ─── */
+  .problem-section {
+    padding: 48px 0;
+    border-bottom: 1px solid var(--border);
+    transition: border-color 0.25s;
+  }
+
+  .problem-section h2 {
+    font-family: 'Lato', sans-serif;
+    font-size: clamp(22px, 4vw, 30px); font-weight: 700;
+    line-height: 1.16; letter-spacing: -0.4px;
+    color: var(--text); margin-bottom: 20px;
+    transition: color 0.25s;
+  }
+
+  .problem-list, .solution-list {
+    list-style: none; display: flex; flex-direction: column; gap: 12px;
+    margin-bottom: 28px;
+  }
+
+  .problem-list li, .solution-list li {
+    display: flex; align-items: flex-start; gap: 10px;
+    font-size: 14px; font-weight: 500; color: var(--text-dim);
+    line-height: 1.65;
+    transition: color 0.25s;
+  }
+  .problem-list li::before {
+    content: '\2717'; color: var(--red); font-weight: 700; font-size: 13px;
+    flex-shrink: 0; margin-top: 2px; transition: color 0.25s;
+  }
+  .solution-list li::before {
+    content: '\2713'; color: var(--green-text); font-weight: 700; font-size: 13px;
+    flex-shrink: 0; margin-top: 2px; transition: color 0.25s;
+  }
+
+  /* ─── PRICING ─── */
+  .pricing-section {
+    padding: 48px 0 40px;
+    border-bottom: 1px solid var(--border);
+    transition: border-color 0.25s;
+  }
+
+  .price-display { display: flex; align-items: baseline; gap: 8px; margin-bottom: 6px; }
+
+  .price-main {
+    font-family: 'Lato', sans-serif;
+    font-size: 54px; font-weight: 700; letter-spacing: -1.5px;
+    color: var(--text); transition: color 0.25s;
+  }
+  .price-strike {
+    font-family: 'Lato', sans-serif;
+    font-size: 28px; font-weight: 700; letter-spacing: -1px;
+    color: var(--muted); text-decoration: line-through; transition: color 0.25s;
+  }
+  .price-period { font-size: 14px; font-weight: 500; color: var(--text-dim); transition: color 0.25s; }
+  .price-note { font-size: 13px; color: var(--text-dim); margin-bottom: 12px; transition: color 0.25s; }
+  .price-desc { font-size: 14px; color: var(--text-dim); line-height: 1.75; margin-bottom: 28px; transition: color 0.25s; }
+  .price-microcopy { font-size: 12px; color: var(--text-dimmer); margin-top: 12px; transition: color 0.25s; }
+
+  .tier-list { display: flex; flex-direction: column; gap: 12px; margin: 24px 0; }
+  .tier-row  { display: flex; flex-direction: column; gap: 5px; }
+  .tier-label {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 12px; font-weight: 600; color: var(--text-dim);
+    transition: color 0.25s;
+  }
+  .tier-badge {
+    font-size: 9px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase;
+    padding: 2px 7px; border-radius: 3px;
+  }
+  .tier-badge.sold { background: var(--surface); color: var(--muted); border: 1px solid var(--border); transition: all 0.25s; }
+  .tier-badge.live {
+    background: var(--amber-glow); color: var(--amber);
+    border: 1px solid color-mix(in srgb, var(--amber) 30%, transparent);
+    transition: all 0.25s;
+  }
+  .tier-bar-track {
+    height: 9px; border-radius: 3px; overflow: hidden;
+    background: var(--surface); display: flex; gap: 2px;
+    border: 1px solid var(--border);
+    transition: background 0.25s, border-color 0.25s;
+  }
+  .seg { height: 100%; border-radius: 2px; flex-shrink: 0; transition: background 0.25s; }
+  .seg.on  { background: var(--green); }
+  .seg.off { background: var(--border); }
+
+  .testi-note { font-size: 12px; color: var(--text-dimmer); margin-bottom: 14px; transition: color 0.25s; }
+
+  .testimonial {
+    display: flex; align-items: flex-start; gap: 14px;
+    padding: 16px 18px;
+    border: 1px solid var(--border); border-radius: 8px;
+    background: var(--surface);
+    transition: background 0.25s, border-color 0.25s;
+  }
+
+  .testi-avatar {
+    width: 64px; height: 64px; border-radius: 50%;
+    background: var(--card); flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Lato', sans-serif; font-size: 15px; font-weight: 700;
+    color: var(--amber); border: 1px solid var(--border-light);
+    transition: background 0.25s;
+  }
+
+  .testi-text {
+    font-size: 15px; font-style: italic; font-weight: 400; color: var(--text-dim);
+    line-height: 1.65; margin-bottom: 5px; transition: color 0.25s;
+  }
+  .testi-handle { font-size: 12px; font-weight: 600; color: var(--muted); transition: color 0.25s; }
+
+  /* ─── BENEFITS / WHAT YOU GET ─── */
+  .benefits-section {
+    padding: 48px 0;
+    border-bottom: 1px solid var(--border);
+    transition: border-color 0.25s;
+  }
+
+  .benefits-section h2 {
+    font-family: 'Lato', sans-serif;
+    font-size: clamp(22px, 4vw, 30px); font-weight: 700;
+    line-height: 1.16; letter-spacing: -0.4px;
+    color: var(--text); margin-bottom: 6px;
+    transition: color 0.25s;
+  }
+
+  .benefits-intro {
+    font-size: 14px; color: var(--text-dim); line-height: 1.75; margin-bottom: 28px;
+    transition: color 0.25s;
+  }
+
+  .benefit-list { display: flex; flex-direction: column; gap: 24px; }
+
+  .benefit-item {
+    display: flex; gap: 16px; align-items: flex-start;
+  }
+
+  .benefit-icon-wrap {
+    width: 32px; height: 32px; border-radius: 50%;
+    border: 1px solid color-mix(in srgb, var(--amber) 35%, transparent);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.25s;
+  }
+  .benefit-icon-wrap svg {
+    width: 15px; height: 15px; color: var(--amber);
+    transition: color 0.25s;
+  }
+
+  .benefit-content { flex: 1; }
+
+  .benefit-title {
+    font-family: 'Lato', sans-serif;
+    font-weight: 700; font-size: 16px;
+    color: var(--text); margin-bottom: 4px;
+    transition: color 0.25s;
+  }
+
+  .benefit-desc { font-size: 14px; color: var(--text-dim); line-height: 1.75; transition: color 0.25s; }
+  .benefit-deliverable {
+    font-size: 13px; color: var(--text-dimmer); margin-top: 6px; line-height: 1.65;
+    transition: color 0.25s;
+  }
+
+  /* ─── HOW IT WORKS ─── */
+  .how-section {
+    padding: 56px 0;
+    border-bottom: 1px solid var(--border);
+    transition: border-color 0.25s;
+  }
+
+  .how-section h2 {
+    font-family: 'Lato', sans-serif;
+    font-size: clamp(22px, 4vw, 30px); font-weight: 700;
+    line-height: 1.16; letter-spacing: -0.4px;
+    color: var(--text); margin-bottom: 28px;
+    transition: color 0.25s;
+  }
+
+  .step-list { display: flex; flex-direction: column; gap: 24px; }
+
+  .step-item {
+    display: flex; gap: 16px; align-items: flex-start;
+  }
+
+  .step-num {
+    font-family: 'Lato', sans-serif;
+    font-size: 13px; font-weight: 700; color: var(--amber);
+    width: 32px; height: 32px; border-radius: 50%;
+    border: 1px solid color-mix(in srgb, var(--amber) 35%, transparent);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.25s;
+  }
+
+  .step-content { flex: 1; }
+
+  .step-title {
+    font-family: 'Lato', sans-serif;
+    font-weight: 700; font-size: 16px;
+    color: var(--text); margin-bottom: 4px;
+    transition: color 0.25s;
+  }
+
+  .step-desc {
+    font-size: 14px; color: var(--text-dim); line-height: 1.75;
+    transition: color 0.25s;
+  }
+
+  /* ─── WHO ─── */
+  .who-section {
+    padding: 56px 0;
+    border-bottom: 1px solid var(--border);
+    transition: border-color 0.25s;
+  }
+
+  .who-section h2 {
+    font-family: 'Lato', sans-serif;
+    font-size: clamp(22px, 4vw, 30px); font-weight: 700;
+    line-height: 1.13; letter-spacing: -0.5px;
+    color: var(--text); margin-bottom: 18px; transition: color 0.25s;
+  }
+
+  .who-section h3 {
+    font-family: 'Lato', sans-serif;
+    font-size: 16px; font-weight: 700;
+    color: var(--text); margin-bottom: 12px; margin-top: 28px;
+    transition: color 0.25s;
+  }
+
+  .who-section h3:first-of-type { margin-top: 0; }
+
+  .who-list {
+    list-style: none; display: flex; flex-direction: column; gap: 10px;
+  }
+  .who-list li {
+    display: flex; align-items: flex-start; gap: 10px;
+    font-size: 14px; font-weight: 500; color: var(--text-dim);
+    transition: color 0.25s;
+  }
+  .who-list.for-list li::before {
+    content: '\2713'; color: var(--green-text); font-weight: 700; font-size: 13px;
+    flex-shrink: 0; margin-top: 2px; transition: color 0.25s;
+  }
+  .who-list.not-list li::before {
+    content: '\2717'; color: var(--muted); font-weight: 700; font-size: 13px;
+    flex-shrink: 0; margin-top: 2px; transition: color 0.25s;
+  }
+
+  /* ─── OUTCOMES ─── */
+  .outcomes-section {
+    padding: 56px 0;
+    border-bottom: 1px solid var(--border);
+    transition: border-color 0.25s;
+  }
+
+  .outcomes-section h2 {
+    font-family: 'Lato', sans-serif;
+    font-size: clamp(22px, 4vw, 30px); font-weight: 700;
+    line-height: 1.16; letter-spacing: -0.4px;
+    color: var(--text); margin-bottom: 6px;
+    transition: color 0.25s;
+  }
+
+  .outcomes-sub {
+    font-size: 14px; color: var(--text-dim); margin-bottom: 20px; transition: color 0.25s;
+  }
+
+  .outcomes-list {
+    list-style: none; display: flex; flex-direction: column; gap: 10px;
+  }
+  .outcomes-list li {
+    display: flex; align-items: flex-start; gap: 10px;
+    font-size: 14px; font-weight: 500; color: var(--text-dim);
+    transition: color 0.25s;
+  }
+  .outcomes-list li::before {
+    content: '\2192'; color: var(--amber); font-weight: 700; font-size: 13px;
+    flex-shrink: 0; margin-top: 2px; transition: color 0.25s;
+  }
+
+  /* ─── FAQ ─── */
+  .faq-section {
+    padding: 56px 0;
+    border-bottom: 1px solid var(--border);
+    transition: border-color 0.25s;
+  }
+
+  .faq-section h2 {
+    font-family: 'Lato', sans-serif;
+    font-size: clamp(22px, 4vw, 30px); font-weight: 700;
+    line-height: 1.16; letter-spacing: -0.4px;
+    color: var(--text); margin-bottom: 28px;
+    transition: color 0.25s;
+  }
+
+  .faq-item {
+    padding: 20px 0;
+    border-bottom: 1px solid var(--border);
+    transition: border-color 0.25s;
+  }
+  .faq-item:first-of-type { border-top: 1px solid var(--border); }
+  .faq-item:last-child { border-bottom: none; }
+
+  .faq-q {
+    font-family: 'Lato', sans-serif;
+    font-weight: 700; font-size: 15px;
+    color: var(--text); margin-bottom: 8px;
+    transition: color 0.25s;
+  }
+
+  .faq-a {
+    font-size: 14px; color: var(--text-dim); line-height: 1.75;
+    transition: color 0.25s;
+  }
+
+  /* ─── ABOUT ─── */
+  .about-section { padding: 56px 0; border-bottom: 1px solid var(--border); transition: border-color 0.25s; }
+  .about-row { display: flex; gap: 18px; align-items: flex-start; margin-bottom: 20px; }
+  .about-avatar {
+    width: 62px; height: 62px; border-radius: 50%;
+    background: var(--card); flex-shrink: 0;
+    border: 1px solid var(--border-light);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Lato', sans-serif; font-size: 20px; font-weight: 700;
+    color: var(--amber); transition: background 0.25s;
+  }
+  .about-name {
+    font-family: 'Lato', sans-serif;
+    font-weight: 700; font-size: 20px; color: var(--text);
+    margin-bottom: 4px; transition: color 0.25s;
+  }
+  .about-handle { font-size: 12px; font-weight: 500; color: var(--muted); transition: color 0.25s; }
+  .about-body { font-size: 14px; color: var(--text-dim); line-height: 1.8; display: flex; flex-direction: column; gap: 14px; transition: color 0.25s; }
+
+  /* ─── FINAL CTA ─── */
+  .final-cta-section {
+    padding: 56px 0;
+    border-bottom: 1px solid var(--border);
+    transition: border-color 0.25s;
+  }
+
+  .final-cta-section h2 {
+    font-family: 'Lato', sans-serif;
+    font-size: clamp(24px, 4vw, 34px); font-weight: 700;
+    line-height: 1.16; letter-spacing: -0.4px;
+    color: var(--text); margin-bottom: 12px;
+    transition: color 0.25s;
+  }
+
+  .final-cta-sub {
+    font-size: 15px; color: var(--text-dim); line-height: 1.75; margin-bottom: 24px;
+    transition: color 0.25s;
+  }
+
+  .final-cta-microcopy {
+    font-size: 13px; color: var(--text-dimmer); margin-top: 12px;
+    transition: color 0.25s;
+  }
+
+  /* ─── SCARCITY BANNER ─── */
+  .scarcity-banner {
+    padding: 16px 24px;
+    background: color-mix(in srgb, #ff4444 8%, var(--bg));
+    border-bottom: 1px solid color-mix(in srgb, #ff4444 20%, var(--border));
+    display: flex; align-items: center; justify-content: center; gap: 16px;
+    transition: all 0.25s;
+  }
+
+  .scarcity-text {
+    font-size: 14px; font-weight: 600; color: var(--text);
+    transition: color 0.25s;
+  }
+
+  .scarcity-bar {
+    display: flex; gap: 3px; align-items: center;
+  }
+
+  .scarcity-seg {
+    width: 12px; height: 12px; border-radius: 2px;
+    transition: background 0.25s;
+  }
+
+  .scarcity-seg.taken { background: #ff4444; animation: pulse 1.5s ease-in-out infinite; }
+  .scarcity-seg.available { background: var(--green); }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+  }
+
+  /* ─── GUARANTEE ─── */
+  .guarantee-box {
+    margin-top: 28px;
+    padding: 20px 24px;
+    background: color-mix(in srgb, var(--green) 6%, transparent);
+    border: 1px solid color-mix(in srgb, var(--green) 25%, var(--border));
+    border-radius: 8px;
+    transition: all 0.25s;
+  }
+  .guarantee-box p {
+    font-size: 14px; color: var(--text-dim); line-height: 1.75;
+    transition: color 0.25s;
+  }
+  .guarantee-box strong {
+    color: var(--green-text); font-weight: 700;
+  }
+
+  /* ─── COMMUNITY CARD ─── */
+  .community-card {
+    margin-top: 32px;
+    padding: 24px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    transition: all 0.25s;
+  }
+  .community-card h3 {
+    font-family: 'Lato', sans-serif;
+    font-size: 18px; font-weight: 700;
+    color: var(--text); margin-bottom: 4px;
+    transition: color 0.25s;
+  }
+  .community-card .comm-price {
+    font-family: 'Lato', sans-serif;
+    font-size: 28px; font-weight: 700;
+    color: var(--amber); margin-bottom: 4px;
+    transition: color 0.25s;
+  }
+  .community-card .comm-period {
+    font-size: 13px; color: var(--text-dim); margin-bottom: 14px;
+    transition: color 0.25s;
+  }
+  .community-card .comm-list {
+    list-style: none; display: flex; flex-direction: column; gap: 8px;
+    margin-bottom: 18px;
+  }
+  .community-card .comm-list li {
+    display: flex; align-items: flex-start; gap: 8px;
+    font-size: 13px; color: var(--text-dim);
+    transition: color 0.25s;
+  }
+  .community-card .comm-list li::before {
+    content: '\2713'; color: var(--green-text); font-weight: 700; font-size: 12px;
+    flex-shrink: 0; margin-top: 2px;
+  }
+
+  /* ─── FOOTER ─── */
+  footer { padding: 24px 0; display: flex; align-items: center; justify-content: space-between; }
+  .footer-copy { font-size: 12px; font-weight: 500; color: var(--muted); transition: color 0.25s; }
+  .footer-link { font-size: 12px; font-weight: 600; color: var(--muted); transition: color 0.2s; }
+  .footer-link:hover { color: var(--amber); }
+
+  @keyframes fadeUp { from{opacity:0;transform:translateY(18px)} to{opacity:1;transform:translateY(0)} }
+  .hero             { animation: fadeUp 0.55s ease both; }
+  .pricing-section  { animation: fadeUp 0.55s 0.08s ease both; }
+  .benefits-section { animation: fadeUp 0.55s 0.14s ease both; }
+
+  @media(max-width:600px) {
+    nav { padding: 12px 16px; }
+    .nav-logo { font-size: 13px; letter-spacing: 2px; gap: 7px; }
+    .nav-logo-icon { width: 14px; height: 14px; }
+    .btn-nav { font-size: 11px; padding: 8px 14px; white-space: nowrap; }
+    .page { padding: 0 16px; }
+    .hero { padding: 44px 0 36px; }
+    .testimonial { flex-direction: column; gap: 10px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV BAR -->
+<nav>
+  <div class="nav-logo">
+    <svg class="nav-logo-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+      <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+    </svg>
+    C2C Blueprint
+  </div>
+  <div class="nav-right">
+    <button class="theme-toggle" id="themeToggle" aria-label="Toggle light/dark mode">
+      <svg class="icon-moon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 12.79A9 9 0 1 1 11.21 3a7 7 0 0 0 9.79 9.79z"/>
+      </svg>
+      <svg class="icon-sun" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="5"/>
+        <line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
+        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+        <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
+        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+      </svg>
+    </button>
+    <a href="#checkout"><button class="btn-nav">Apply Now</button></a>
+  </div>
+</nav>
+
+<!-- SCARCITY BANNER -->
+<div class="scarcity-banner">
+  <span class="scarcity-text">Only 10 Accelerator Spots Per Quarter</span>
+  <div class="scarcity-bar">
+    <span class="scarcity-seg taken"></span>
+    <span class="scarcity-seg taken"></span>
+    <span class="scarcity-seg taken"></span>
+    <span class="scarcity-seg taken"></span>
+    <span class="scarcity-seg taken"></span>
+    <span class="scarcity-seg taken"></span>
+    <span class="scarcity-seg taken"></span>
+    <span class="scarcity-seg available"></span>
+    <span class="scarcity-seg available"></span>
+    <span class="scarcity-seg available"></span>
+  </div>
+</div>
+
+<div class="page">
+
+  <!-- HERO SECTION -->
+  <section class="hero">
+    <svg class="hero-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+      <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+    </svg>
+    <div class="eyebrow">Credit-to-Cashflow Blueprint&trade;</div>
+    <h1>Get Approved for $50K+ in Funding.<br><span class="accent">Turn It Into Cashflow in 90 Days.</span></h1>
+    <p class="hero-sub">
+      You're tired of being denied, maxed out, and stuck hustling without the capital to actually scale. The system is designed to confuse you, deny you, and keep you guessing. That's why most business owners spin their wheels until they burn out.
+    </p>
+    <p class="hero-bold">There's a simple, proven path to become fundable&mdash;and I'll walk you through it step by step.</p>
+    <a href="#checkout"><button class="btn-cta">Apply for the Accelerator</button></a>
+    <p class="hero-microcopy">Doors close once spots are filled.</p>
+  </section>
+
+  <!-- PROBLEM / SOLUTION -->
+  <section class="problem-section">
+    <h2>The Problem for Business Owners</h2>
+    <ul class="problem-list">
+      <li>Denied for funding over and over, without knowing why</li>
+      <li>High-interest MCAs eating up your profits</li>
+      <li>Messy compliance setup that makes banks flag your apps</li>
+      <li>Maxed-out personal cards with no rollover plan</li>
+      <li>No roadmap for turning approvals into real cashflow</li>
+    </ul>
+
+    <h2>With the Credit-to-Cashflow Blueprint&trade;</h2>
+    <ul class="solution-list">
+      <li>$50K+ in legitimate approvals within 90 days</li>
+      <li>A personalized roadmap that tells you what to do and when</li>
+      <li>A proven lender sequence&mdash;no more guessing and praying</li>
+      <li>A clear plan to turn funding into income-producing assets</li>
+      <li>A coach + community that keeps you accountable</li>
+      <li>Backed by a &ldquo;Funded or We Keep Working With You&rdquo; Guarantee</li>
+    </ul>
+  </section>
+
+  <!-- HOW IT WORKS -->
+  <section class="how-section">
+    <div class="eyebrow">The Process</div>
+    <h2>How It Works</h2>
+    <p style="font-size:14px;color:var(--text-dim);line-height:1.75;margin-bottom:24px;margin-top:-16px;">Most people treat funding like a lottery: apply everywhere, pray, get denied, repeat. That's why they stay broke. Here's how we do it instead:</p>
+
+    <div class="step-list">
+      <div class="step-item">
+        <span class="step-num">1</span>
+        <div class="step-content">
+          <div class="step-title">Fix Your Foundation</div>
+          <div class="step-desc">Clean up your LLC, address, NAICS codes, and compliance so banks actually say yes instead of flagging your application.</div>
+        </div>
+      </div>
+      <div class="step-item">
+        <span class="step-num">2</span>
+        <div class="step-content">
+          <div class="step-title">Apply in the Right Order</div>
+          <div class="step-desc">Use our proven lender sequence&mdash;banks and lenders that actually approve&mdash;instead of shotgunning applications and tanking your score.</div>
+        </div>
+      </div>
+      <div class="step-item">
+        <span class="step-num">3</span>
+        <div class="step-content">
+          <div class="step-title">Deploy Funding With a Plan</div>
+          <div class="step-desc">Turn credit into cashflow instead of debt. We show you exactly how to flip your approvals into income-producing assets with real ROI.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- WHAT YOU'RE GETTING -->
+  <section class="benefits-section">
+    <h2>What You're Getting</h2>
+    <p class="benefits-intro">The Credit-to-Cashflow Blueprint&trade; is a 90-day Accelerator that fixes your foundation, gets you approved for real funding, and shows you how to flip it into income.</p>
+
+    <div class="benefit-list">
+      <!-- BENEFIT 1 -->
+      <div class="benefit-item">
+        <div class="benefit-icon-wrap">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+        </div>
+        <div class="benefit-content">
+          <div class="benefit-title">Phase 1: Fundability Audit</div>
+          <div class="benefit-desc">We show you exactly what's blocking your approvals&mdash;LLC structure, credit profile, compliance gaps&mdash;so you stop getting denied for fixable reasons.</div>
+          <div class="benefit-deliverable">Deliverable: Full business credit audit with a personalized fix-it checklist</div>
+        </div>
+      </div>
+      <!-- BENEFIT 2 -->
+      <div class="benefit-item">
+        <div class="benefit-icon-wrap">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/></svg>
+        </div>
+        <div class="benefit-content">
+          <div class="benefit-title">Phase 2: Lender Sequence</div>
+          <div class="benefit-desc">Apply in the right order for maximum approvals using our proprietary lender lists and application scripts. No more guessing and praying.</div>
+          <div class="benefit-deliverable">Deliverable: Step-by-step lender roadmap + application templates</div>
+        </div>
+      </div>
+      <!-- BENEFIT 3 -->
+      <div class="benefit-item">
+        <div class="benefit-icon-wrap">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+        </div>
+        <div class="benefit-content">
+          <div class="benefit-title">Phase 3: Cashflow Activation</div>
+          <div class="benefit-desc">Learn how to safely deploy credit into income-producing assets so your funding makes you money instead of burying you in debt.</div>
+          <div class="benefit-deliverable">Deliverable: Cashflow deployment playbook + ROI calculator</div>
+        </div>
+      </div>
+      <!-- BENEFIT 4 -->
+      <div class="benefit-item">
+        <div class="benefit-icon-wrap">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+        </div>
+        <div class="benefit-content">
+          <div class="benefit-title">Phase 4: Scale Plan</div>
+          <div class="benefit-desc">Map out your next $100K+ in funding. Once the machine is built, we show you how to keep it spitting out money.</div>
+        </div>
+      </div>
+      <!-- BENEFIT 5 -->
+      <div class="benefit-item">
+        <div class="benefit-icon-wrap">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+        </div>
+        <div class="benefit-content">
+          <div class="benefit-title">Live Coaching + Private Community</div>
+          <div class="benefit-desc">Weekly live coaching calls, private Q&amp;A, and access to a members-only group of serious entrepreneurs. Direct access to me&mdash;no gatekeepers.</div>
+          <div class="benefit-deliverable">Plus: Templates, lender lists, scripts, and every tool you need to not fumble the bag.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- OUTCOMES -->
+  <section class="outcomes-section">
+    <div class="eyebrow">Results</div>
+    <h2>What We Can Achieve Together</h2>
+    <p class="outcomes-sub">This isn't about chasing approvals&mdash;it's about building a machine that keeps spitting out money.</p>
+
+    <ul class="outcomes-list">
+      <li>$50K&ndash;$100K+ in legitimate business funding approvals</li>
+      <li>A bankable business profile that lenders actually respect</li>
+      <li>Your first cashflow asset deployed and producing income</li>
+      <li>Exit high-interest MCA traps and move to real bank funding</li>
+      <li>A scale plan for your next $100K+ in approvals</li>
+      <li>Move like a CEO, not a hustler&mdash;with capital as a tool, not a choke chain</li>
+    </ul>
+  </section>
+
+  <!-- TESTIMONIALS -->
+  <section class="pricing-section">
+    <div class="eyebrow">Social Proof</div>
+    <h2 style="font-family:'Lato',sans-serif;font-size:clamp(22px,4vw,30px);font-weight:700;line-height:1.16;letter-spacing:-0.4px;color:var(--text);margin-bottom:6px;">What Clients Have Said</h2>
+    <p class="testi-note">Real results from real entrepreneurs who followed the Blueprint.</p>
+
+    <!-- TESTIMONIAL 1 -->
+    <div class="testimonial" style="margin-bottom: 12px;">
+      <div class="testi-avatar">MT</div>
+      <div>
+        <p class="testi-text">"Got $82,000 in approvals in 60 days. First time I feel like the bank actually respects me."</p>
+        <p class="testi-handle">Marcus T.</p>
+      </div>
+    </div>
+
+    <!-- TESTIMONIAL 2 -->
+    <div class="testimonial" style="margin-bottom: 12px;">
+      <div class="testi-avatar">JR</div>
+      <div>
+        <p class="testi-text">"Was stuck in MCA hell. Ty's process got me into legit bank funding and I used it to launch my Airbnb play."</p>
+        <p class="testi-handle">Janine R.</p>
+      </div>
+    </div>
+
+    <!-- TESTIMONIAL 3 -->
+    <div class="testimonial">
+      <div class="testi-avatar">CJ</div>
+      <div>
+        <p class="testi-text">"I'd been denied 6 times before. This Blueprint finally made me bankable."</p>
+        <p class="testi-handle">Chris J.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- WHO THIS IS FOR -->
+  <section class="who-section">
+    <h2>Who Is This For?</h2>
+
+    <h3>This Is for You If</h3>
+    <ul class="who-list for-list">
+      <li>You've got an LLC (or are ready to set one up) and you're serious about scaling</li>
+      <li>You're tired of being denied, maxing out personal cards, or drowning in MCA debt</li>
+      <li>You know your business could blow up with the right capital&mdash;you just need the roadmap</li>
+      <li>You're ready to do the work, follow the steps, and stop guessing</li>
+      <li>You want to move like a CEO, not the smartest broke person in the room</li>
+    </ul>
+
+    <h3>This Is Not for You If</h3>
+    <ul class="who-list not-list">
+      <li>You're looking for a get-rich-quick scheme with zero effort</li>
+      <li>You're not willing to fix your foundation before chasing approvals</li>
+      <li>You want someone to do everything for you without showing up</li>
+    </ul>
+  </section>
+
+  <!-- PRICING -->
+  <section class="pricing-section" id="checkout" style="padding: 64px 0 52px;">
+    <div class="eyebrow">The Accelerator</div>
+    <div class="price-display">
+      <span class="price-strike">$10,000</span>
+      <span class="price-main">$6,000</span>
+      <span class="price-period">Founder Pricing</span>
+    </div>
+
+    <!-- Founder pricing callout -->
+    <div style="margin-top: 20px; margin-bottom: 20px; padding: 16px 20px; background: color-mix(in srgb, var(--amber) 8%, transparent); border: 1px solid var(--amber); border-radius: 6px; max-width: 500px;">
+      <p style="margin: 0; font-size: 15px; color: var(--text); line-height: 1.5;">Founder pricing won't last forever. Lock in at $6,000 before the rate goes up. Payment plan available: 3&times; $2,500.</p>
+    </div>
+
+    <p class="price-note">The math is simple: $50K+ in approvals for a fraction of that cost.</p>
+
+    <!-- Pricing tiers -->
+    <div class="tier-list">
+      <div class="tier-row">
+        <div class="tier-label">Q1 Cohort <span class="tier-badge sold">Sold Out</span></div>
+        <div class="tier-bar-track"><span class="seg on" style="width:20%;background:var(--amber)"></span><span class="seg on" style="width:20%;background:var(--amber)"></span><span class="seg on" style="width:20%;background:var(--amber)"></span><span class="seg on" style="width:20%;background:var(--amber)"></span><span class="seg on" style="width:20%;background:var(--amber)"></span></div>
+      </div>
+      <div class="tier-row">
+        <div class="tier-label">Q2 Cohort <span class="tier-badge live">Current</span></div>
+        <div class="tier-bar-track"><span class="seg on" style="width:14%"></span><span class="seg on" style="width:14%"></span><span class="seg on" style="width:14%"></span><span class="seg on" style="width:14%"></span><span class="seg on" style="width:14%"></span><span class="seg on" style="width:14%"></span><span class="seg on" style="width:14%"></span><span class="seg off" style="width:14%"></span><span class="seg off" style="width:14%"></span><span class="seg off" style="width:14%"></span></div>
+      </div>
+    </div>
+
+    <p class="price-desc">90 days. Fix your foundation, get funded, and deploy into cashflow. This is where we roll up our sleeves and get you funded + cashflowing.</p>
+
+    <a href="#checkout"><button class="btn-cta">Apply for the Accelerator</button></a>
+
+    <!-- Spots available indicator -->
+    <div style="display: flex; align-items: center; gap: 12px; margin-top: 20px; margin-bottom: 20px; padding: 14px 20px; background: color-mix(in srgb, var(--amber) 4%, transparent); border: 1px solid var(--border); border-radius: 6px; width: fit-content;">
+      <span style="font-size: 15px; font-weight: 600; color: var(--text);">3 Spots Available This Quarter</span>
+      <div style="display: flex; gap: 4px;">
+        <span style="width: 10px; height: 10px; border-radius: 2px; background: #ff4444; animation: pulse 1.5s ease-in-out infinite;"></span>
+        <span style="width: 10px; height: 10px; border-radius: 2px; background: #ff4444; animation: pulse 1.5s ease-in-out infinite;"></span>
+        <span style="width: 10px; height: 10px; border-radius: 2px; background: var(--green);"></span>
+      </div>
+    </div>
+
+    <!-- Guarantee -->
+    <div class="guarantee-box">
+      <p><strong>Funded or We Keep Working With You Guarantee:</strong> Follow the steps, do the work, and if you don't get funded, we'll keep working with you until you do. Simple as that. No runarounds, no excuses.</p>
+    </div>
+
+    <!-- Community option -->
+    <div class="community-card">
+      <h3>Not Ready for the Accelerator?</h3>
+      <div class="comm-price">$197<span style="font-size:14px;font-weight:500;color:var(--text-dim);"> /month</span></div>
+      <div class="comm-period">Join the Community and start building your foundation right now.</div>
+      <ul class="comm-list">
+        <li>Live coaching calls</li>
+        <li>Lender lists &amp; templates</li>
+        <li>Training library</li>
+        <li>Private community access</li>
+      </ul>
+      <a href="#checkout"><button class="btn-cta" style="background:var(--surface);color:var(--amber);border:1px solid var(--amber);">Join the Community</button></a>
+    </div>
+
+    <p class="price-microcopy">After joining, you'll receive onboarding details and your first call booking link within 24 hours.</p>
+  </section>
+
+  <!-- FAQ -->
+  <section class="faq-section">
+    <h2>Frequently Asked Questions</h2>
+
+    <div class="faq-item">
+      <div class="faq-q">What if I've already been denied multiple times?</div>
+      <div class="faq-a">That's exactly who this is built for. Most denials happen because of fixable issues&mdash;wrong LLC setup, bad application order, compliance gaps. We fix the foundation first so you stop getting denied for the same preventable reasons.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q">Do I need an existing business to join?</div>
+      <div class="faq-a">You need an LLC (or be willing to set one up). Whether you have revenue or are just getting started, the Blueprint meets you where you are and builds your fundability from the ground up.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q">What's the difference between the Accelerator and the Community?</div>
+      <div class="faq-a">The Community gives you access to calls, training, and templates to work at your own pace. The Accelerator is the hands-on, done-with-you program where we roll up our sleeves, build your roadmap, and get you funded within 90 days.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q">What kind of funding are we talking about?</div>
+      <div class="faq-a">Legitimate business credit lines, term loans, and cards from real banks and lenders&mdash;not predatory MCAs or high-interest traps. We target $50K+ in approvals as a starting point.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q">What does "turn it into cashflow" actually mean?</div>
+      <div class="faq-a">Once you're approved, we show you how to deploy that capital into income-producing assets&mdash;think Airbnbs, flips, equipment, inventory plays&mdash;so your funding generates ROI instead of sitting as debt.</div>
+    </div>
+  </section>
+
+  <!-- ABOUT / BIO -->
+  <section class="about-section" id="about">
+    <div class="eyebrow">About</div>
+    <div class="about-row">
+      <div class="about-avatar">Ty</div>
+      <div>
+        <div class="about-name">Hi, I'm Ty.</div>
+        <div class="about-handle">Business Funding Strategist</div>
+      </div>
+    </div>
+    <div class="about-body">
+      <p>I help entrepreneurs become fundable, get approved for real capital, and turn that funding into cashflow assets&mdash;not more debt.</p>
+      <p>I've helped hundreds of business owners go from denial letters and MCA traps to $50K&ndash;$100K+ in legitimate bank approvals. The system works because it's built on structure, not luck.</p>
+      <p>I created the Credit-to-Cashflow Blueprint&trade; because I was tired of watching smart, hardworking people stay broke because nobody showed them the actual playbook. Money should be a tool, not a choke chain.</p>
+    </div>
+  </section>
+
+  <!-- FINAL CTA -->
+  <section class="final-cta-section">
+    <h2>Stop Being the Smartest Broke Person in the Room.</h2>
+    <p class="final-cta-sub">You know you're meant to scale. The capital gap has you moving like a hustler instead of a CEO. Let's fix that&mdash;for good.</p>
+    <a href="#checkout"><button class="btn-cta">Apply for the Accelerator</button></a>
+    <p class="final-cta-microcopy">Only 10 spots per quarter. Once they're gone, you're waiting for the next round.</p>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <span class="footer-copy">Credit-to-Cashflow Blueprint&trade;</span>
+    <a class="footer-link" href="#checkout">Apply Now &rarr;</a>
+  </footer>
+
+</div>
+
+<!-- THEME TOGGLE SCRIPT -->
+<script>
+  const toggle = document.getElementById('themeToggle');
+  if (localStorage.getItem('lp-theme') === 'light') document.body.classList.add('light');
+
+  toggle.addEventListener('click', () => {
+    document.body.classList.toggle('light');
+    localStorage.setItem('lp-theme', document.body.classList.contains('light') ? 'light' : 'dark');
+  });
+</script>
+</body>
+</html>
