@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -49,8 +50,15 @@ export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
 export function BrandMark() {
   return (
     <Link href="/dashboard" className="flex items-center gap-3 px-2">
-      <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gold-gradient font-black text-primary-foreground shadow-gold">
-        T
+      <div className="flex h-9 w-9 items-center justify-center rounded-lg border border-gold/25 bg-gold/10 shadow-gold">
+        <Image
+          src="/brand/tte-mark.png"
+          alt="TRIAD T Enterprise"
+          width={28}
+          height={28}
+          priority
+          className="h-7 w-7 object-contain"
+        />
       </div>
       <div className="leading-tight">
         <p className="text-sm font-bold tracking-tight gold-text">TRIAD T</p>
