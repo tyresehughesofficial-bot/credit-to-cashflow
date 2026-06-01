@@ -7,6 +7,10 @@ Apple-level-simple, and fast.
 Built with **Next.js (App Router) · TypeScript · Tailwind CSS · Shadcn-style UI
 · Supabase**.
 
+**▶ Live deploy:** see **[DEPLOY.md](./DEPLOY.md)** for a 2-minute Vercel deploy (no env vars needed).
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/tyresehughesofficial-bot/credit-to-cashflow/tree/claude/wizardly-hypatia-oQMwZ&project-name=triad-t-command-center)
+
 ---
 
 ## Modules
