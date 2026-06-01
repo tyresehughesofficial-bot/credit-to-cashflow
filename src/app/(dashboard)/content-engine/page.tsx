@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Sparkles, Wand2 } from "lucide-react";
+import Link from "next/link";
+import { Sparkles, Wand2, Radar, CalendarPlus, PenLine, ArrowRight } from "lucide-react";
 
 import { PageHeader } from "@/components/shared/page-header";
 import { CopyButton } from "@/components/shared/copy-button";
@@ -17,9 +18,20 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { FunnelChip, SourceChip } from "@/components/intelligence/bits";
+import { setStage, useProductionItems } from "@/lib/intelligence/production";
 import { CONTENT_IDEAS } from "@/lib/data/mock";
 import { generateContent, type GeneratedContent } from "@/lib/generators";
 import type { Funnel } from "@/types/database";
+
+const FORMAT_MAP: Record<string, string> = {
+  Reel: "reel",
+  Carousel: "carousel",
+  Story: "story",
+  Short: "reel",
+  "Long-form": "post",
+  Thread: "post",
+};
 
 const FUNNELS: { value: Funnel; label: string; hint: string }[] = [
   { value: "TOF", label: "TOF — Awareness", hint: "Reach & attention" },
@@ -40,9 +52,19 @@ export default function ContentEnginePage() {
   const [funnel, setFunnel] = useState<Funnel>("TOF");
   const [format, setFormat] = useState("reel");
   const [result, setResult] = useState<GeneratedContent | null>(null);
+  const approved = useProductionItems();
 
   function handleGenerate() {
     setResult(generateContent(topic, funnel, format));
+  }
+
+  function produceFrom(oppTitle: string, oppFunnel: Funnel, oppFormat: string) {
+    setTopic(oppTitle);
+    setFunnel(oppFunnel);
+    const mapped = FORMAT_MAP[oppFormat] ?? "reel";
+    setFormat(mapped);
+    setResult(generateContent(oppTitle, oppFunnel, mapped));
+    if (typeof window !== "undefined") window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
   return (
@@ -51,7 +73,75 @@ export default function ContentEnginePage() {
         icon={<Sparkles className="h-5 w-5" />}
         title="AI Content Engine"
         description="Generate TOF / MOF / BOF content ideas, reels, carousels, captions, and CTAs — built for credit & funding."
+        actions={
+          <Link href="/intelligence/queue">
+            <span className="inline-flex h-10 items-center gap-2 rounded-lg border border-gold/40 px-4 text-sm font-semibold text-gold hover:bg-gold/10">
+              <Radar className="h-4 w-4" /> Opportunity Queue
+            </span>
+          </Link>
+        }
       />
+
+      {/* Approved opportunities flowing in from the Intelligence Engine */}
+      <Card className="mb-6 border-gold/25">
+        <CardHeader className="flex-row items-center justify-between gap-3">
+          <div>
+            <CardTitle className="flex items-center gap-2">
+              <Radar className="h-4 w-4 text-gold" /> From the Intelligence Engine
+            </CardTitle>
+            <CardDescription>
+              {approved.length > 0
+                ? "Approved opportunities ready to produce — generate the package or send to the calendar."
+                : "Approve opportunities in the Opportunity Queue and they flow straight in here."}
+            </CardDescription>
+          </div>
+          <Badge variant={approved.length ? "success" : "muted"}>{approved.length} approved</Badge>
+        </CardHeader>
+        <CardContent>
+          {approved.length === 0 ? (
+            <Link
+              href="/intelligence/queue"
+              className="flex items-center justify-center gap-2 rounded-lg border border-dashed border-border bg-background/40 px-4 py-6 text-sm text-muted-foreground hover:text-foreground"
+            >
+              Open the Opportunity Queue to approve your first opportunity <ArrowRight className="h-4 w-4" />
+            </Link>
+          ) : (
+            <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+              {approved.slice(0, 6).map((it) => (
+                <div key={it.opp.id} className="flex flex-col rounded-lg border border-border bg-background/40 p-3">
+                  <div className="flex items-center gap-1.5">
+                    <SourceChip source={it.opp.source} />
+                    <FunnelChip funnel={it.opp.funnel} />
+                    <span className="ml-auto text-[11px] font-bold text-gold">{it.opp.total}</span>
+                  </div>
+                  <p className="mt-1.5 line-clamp-2 flex-1 text-[13px] font-medium leading-snug">{it.opp.title}</p>
+                  <p className="mt-1 text-[11px] text-muted-foreground">
+                    {it.stage}
+                    {it.date ? ` · ${it.date}` : ""}
+                  </p>
+                  <div className="mt-2 flex gap-1.5">
+                    <Button
+                      size="sm"
+                      className="h-7 flex-1 text-[11px]"
+                      onClick={() => {
+                        setStage(it.opp.id, "Scripting");
+                        produceFrom(it.opp.title, it.opp.funnel as Funnel, it.opp.format);
+                      }}
+                    >
+                      <PenLine className="h-3 w-3" /> Produce
+                    </Button>
+                    <Link href="/content-calendar">
+                      <Button size="sm" variant="outline" className="h-7 text-[11px]">
+                        <CalendarPlus className="h-3 w-3" /> Schedule
+                      </Button>
+                    </Link>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       <div className="grid gap-6 lg:grid-cols-[380px_1fr]">
         <Card className="h-fit">
