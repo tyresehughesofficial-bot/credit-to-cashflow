@@ -216,7 +216,7 @@ export function SidebarNav({
 export function BrandMark({ collapsed = false }: { collapsed?: boolean }) {
   return (
     <Link
-      href="/dashboard"
+      href="/command-center"
       className={cn("flex items-center gap-3", collapsed ? "justify-center" : "px-2")}
     >
       <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-gold/25 bg-gold/10 p-1 shadow-gold">

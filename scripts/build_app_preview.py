@@ -56,7 +56,7 @@ ICON = {
 
 # (label, key, slug)
 SECTIONS = [
- ("Home","home",[("Command Center","dash","dashboard")]),
+ ("Home","home",[("Command Center","dash","command-center")]),
  ("Content System","clap",[("AI Content Engine","spark","content-engine"),("Idea Generation","bulb","idea-generation"),("Thumbnail Studio","img","thumbnail-studio"),("Motion Graphics Studio","clap","motion-graphics"),("Creative Center","palette","creative")]),
  ("Writing System","pentool",[("Script Writer","penline","script-writer"),("Caption Builder","caps","caption-builder"),("Description Builder","align","description-builder"),("CTA Generator","click","cta-generator")]),
  ("Content Operations","kanban",[("Content Pipeline","kanban","content-pipeline"),("News & Trend Center","news","trends"),("Content Calendar","cal","content-calendar")]),

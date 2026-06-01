@@ -73,7 +73,7 @@ export const NAV_SECTIONS: NavSection[] = [
     items: [
       {
         label: "Command Center",
-        href: "/dashboard",
+        href: "/command-center",
         icon: LayoutDashboard,
         description: "Daily content, lead, client & revenue metrics at a glance.",
       },
