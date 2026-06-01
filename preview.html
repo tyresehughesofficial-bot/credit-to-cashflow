@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>TRIAD T — Command Center (Preview)</title>
+<style>
+  :root{
+    --bg:#0b0a08; --surface:#121009; --card:#161410; --card2:#1e1b14;
+    --border:#2a261c; --border2:#3e3928;
+    --gold:#D4AF37; --gold-lite:#E6C65A; --gold-deep:#A07D1F;
+    --text:#f2ede0; --dim:#c4b89a; --dimmer:#7d735c;
+    --green:#3ecf6e; --red:#ff5b5b;
+    --radius:14px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{color-scheme:dark}
+  body{
+    font-family:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif;
+    background:var(--bg);color:var(--text);min-height:100vh;
+    background-image:radial-gradient(80% 50% at 50% 0%, rgba(212,175,55,.06) 0%, rgba(0,0,0,0) 60%);
+    background-attachment:fixed;
+    -webkit-font-smoothing:antialiased;
+  }
+  .gold-text{background:linear-gradient(135deg,#F5E9BE 0%,#D4AF37 45%,#A07D1F 100%);
+    -webkit-background-clip:text;background-clip:text;color:transparent}
+  .app{display:flex;min-height:100vh}
+
+  /* Sidebar */
+  .sidebar{width:264px;flex:0 0 264px;border-right:1px solid var(--border);
+    background:rgba(18,16,9,.5);position:sticky;top:0;height:100vh;display:flex;flex-direction:column}
+  .brand{display:flex;align-items:center;gap:12px;height:64px;padding:0 18px;border-bottom:1px solid var(--border)}
+  .logo{width:36px;height:36px;border-radius:10px;display:grid;place-items:center;font-weight:900;color:#1a1505;
+    background:linear-gradient(135deg,#F5E9BE,#D4AF37 45%,#A07D1F);
+    box-shadow:0 0 0 1px rgba(212,175,55,.18),0 8px 30px -8px rgba(212,175,55,.25)}
+  .brand b{font-size:14px;display:block;letter-spacing:-.2px}
+  .brand small{font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--dimmer)}
+  .nav{padding:14px 12px;overflow:auto;flex:1}
+  .nav .grp{font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--dimmer);padding:14px 10px 6px}
+  .nav a{display:flex;align-items:center;gap:11px;padding:9px 11px;border-radius:10px;color:var(--dim);
+    text-decoration:none;font-size:13.5px;transition:.15s}
+  .nav a:hover{background:rgba(255,255,255,.03);color:var(--text)}
+  .nav a.active{background:rgba(212,175,55,.1);color:var(--gold);box-shadow:inset 0 0 0 1px rgba(212,175,55,.25)}
+  .nav a .ic{width:18px;height:18px;flex:0 0 18px;opacity:.9}
+  .foot{padding:14px 18px;border-top:1px solid var(--border);font-size:10px;line-height:1.6;color:var(--dimmer)}
+
+  /* Main */
+  .main{flex:1;min-width:0;display:flex;flex-direction:column}
+  .topbar{position:sticky;top:0;z-index:5;height:64px;display:flex;align-items:center;gap:14px;
+    padding:0 26px;border-bottom:1px solid var(--border);background:rgba(11,10,8,.8);backdrop-filter:blur(14px)}
+  .search{flex:1;max-width:420px;position:relative}
+  .search input{width:100%;height:40px;border-radius:10px;border:1px solid var(--border2);
+    background:rgba(255,255,255,.02);color:var(--text);padding:0 14px 0 38px;font-size:13.5px}
+  .search input::placeholder{color:var(--dimmer)}
+  .search .si{position:absolute;left:12px;top:11px;opacity:.5}
+  .tb-right{margin-left:auto;display:flex;align-items:center;gap:12px}
+  .pill{font-size:11px;font-weight:600;padding:3px 10px;border-radius:99px;background:rgba(255,177,40,.14);color:#ffce85}
+  .userchip{display:flex;align-items:center;gap:9px;border:1px solid var(--border);border-radius:99px;padding:4px 13px 4px 4px;background:rgba(22,20,16,.6)}
+  .avatar{width:28px;height:28px;border-radius:99px;background:rgba(212,175,55,.15);color:var(--gold);
+    display:grid;place-items:center;font-size:11px;font-weight:700}
+  .userchip b{font-size:12px;display:block;line-height:1.2}
+  .userchip small{font-size:10px;color:var(--dimmer);text-transform:capitalize}
+
+  .content{padding:26px 28px 48px}
+  .pagehead{display:flex;align-items:flex-start;gap:14px;border-bottom:1px solid var(--border);padding-bottom:22px;margin-bottom:26px}
+  .pagehead .hi{width:40px;height:40px;border-radius:11px;border:1px solid rgba(212,175,55,.3);
+    background:rgba(212,175,55,.1);color:var(--gold);display:grid;place-items:center}
+  .pagehead h1{font-size:24px;letter-spacing:-.5px}
+  .pagehead p{color:var(--dim);font-size:13.5px;margin-top:4px;max-width:640px}
+  .pagehead .actions{margin-left:auto}
+  .btn{display:inline-flex;align-items:center;gap:8px;height:40px;padding:0 18px;border-radius:10px;border:none;
+    font-size:13.5px;font-weight:600;cursor:pointer;color:#1a1505;
+    background:linear-gradient(135deg,#F5E9BE,#D4AF37 45%,#A07D1F);
+    box-shadow:0 0 0 1px rgba(212,175,55,.18),0 8px 30px -8px rgba(212,175,55,.25)}
+
+  .sec-title{display:flex;align-items:center;gap:9px;font-size:12px;letter-spacing:.08em;text-transform:uppercase;
+    color:var(--dim);font-weight:600;margin:30px 0 14px}
+  .dot{width:6px;height:6px;border-radius:99px;background:var(--gold)}
+
+  .grid{display:grid;gap:16px}
+  .g4{grid-template-columns:repeat(4,1fr)}
+  .g2{grid-template-columns:1fr 1fr}
+  .g3{grid-template-columns:2fr 1fr}
+
+  .metric{position:relative;overflow:hidden;border:1px solid var(--border);border-radius:var(--radius);
+    background:var(--card);padding:18px}
+  .metric:before{content:"";position:absolute;inset:0;background:radial-gradient(120% 120% at 50% 0%,rgba(212,175,55,.06),transparent 55%)}
+  .metric .lab{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--dimmer);font-weight:600;position:relative}
+  .metric .row{display:flex;align-items:flex-end;justify-content:space-between;margin-top:8px;position:relative}
+  .metric .val{font-size:26px;font-weight:800;letter-spacing:-.5px}
+  .delta{font-size:11px;font-weight:700;padding:2px 8px;border-radius:99px}
+  .up{background:rgba(62,207,110,.15);color:var(--green)}
+  .down{background:rgba(255,91,91,.15);color:var(--red)}
+  .metric .hint{font-size:11px;color:var(--dimmer);margin-top:6px;position:relative}
+
+  .card{border:1px solid var(--border);border-radius:var(--radius);background:var(--card)}
+  .card .ch{padding:18px 20px 0}
+  .card .ch h3{font-size:15px}
+  .card .ch p{font-size:12.5px;color:var(--dim);margin-top:3px}
+  .card .cb{padding:18px 20px 20px}
+
+  /* fake chart */
+  .chartwrap{height:230px;display:flex;align-items:flex-end;gap:10px;padding-top:10px}
+  .bargrp{flex:1;display:flex;align-items:flex-end;justify-content:center;gap:4px;height:100%}
+  .bar{width:11px;border-radius:4px 4px 0 0}
+  .b1{background:#54410E}.b2{background:#A07D1F}.b3{background:#D4AF37}
+  .xax{display:flex;gap:10px;margin-top:8px}
+  .xax span{flex:1;text-align:center;font-size:11px;color:var(--dimmer)}
+  svg .area1{fill:url(#g1)}
+  .legend{display:flex;gap:16px;font-size:11.5px;color:var(--dim);margin-top:10px;justify-content:center}
+  .lg{display:inline-flex;align-items:center;gap:6px}
+  .sw{width:10px;height:10px;border-radius:3px}
+
+  .task{display:flex;align-items:center;justify-content:space-between;gap:12px;border:1px solid var(--border);
+    border-radius:11px;background:rgba(255,255,255,.015);padding:12px 15px;margin-bottom:9px}
+  .task b{font-size:13.5px;font-weight:500;display:block}
+  .task small{font-size:11.5px;color:var(--dimmer)}
+  .tag{font-size:11px;font-weight:600;padding:3px 11px;border-radius:99px;white-space:nowrap}
+  .t-urgent{background:rgba(255,91,91,.15);color:var(--red)}
+  .t-high{background:rgba(255,177,40,.16);color:#ffce85}
+  .t-med{background:rgba(255,255,255,.06);color:var(--dim)}
+  .gain{display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--border)}
+  .gain:last-child{border:none}
+  .gain b{font-size:13.5px;font-weight:500;display:block}
+  .gain small{font-size:11.5px;color:var(--dimmer)}
+  .badge-g{background:rgba(62,207,110,.15);color:var(--green);font-size:12px;font-weight:700;padding:3px 10px;border-radius:99px}
+
+  .note{max-width:1320px;margin:0 auto 10px;padding:10px 14px;border:1px dashed var(--border2);border-radius:10px;
+    font-size:12px;color:var(--dim);background:rgba(212,175,55,.04)}
+  .shell{max-width:1480px;margin:0 auto}
+  @media(max-width:1000px){.sidebar{display:none}.g4{grid-template-columns:1fr 1fr}.g2,.g3{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="shell">
+  <p class="note">⬤ Static preview of the <b>Command Center</b> dashboard — the real app is the Next.js build in this repo (<code>npm run dev</code>). This file mirrors the live black-and-gold UI and demo data.</p>
+</div>
+<div class="app">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="logo">T</div>
+      <div><b class="gold-text">TRIAD T</b><small>Command Center</small></div>
+    </div>
+    <nav class="nav">
+      <div class="grp">Operations</div>
+      <a class="active" href="#"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>Command Center</a>
+      <div class="grp">Content &amp; Creative</div>
+      <a href="#"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l1.9 4.8L19 9.5l-4.1 2.9L16 18l-4-2.6L8 18l1.1-5.6L5 9.5l5.1-1.7z"/></svg>AI Content Engine</a>
+      <a href="#"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="5" r="3"/><path d="M12 22V8M5 12H2a10 10 0 0 0 20 0h-3"/></svg>Viral Hook Library</a>
+      <a href="#"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>Script Writer</a>
+      <a href="#"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="13.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="10.5" r="2.5"/><circle cx="8.5" cy="7.5" r="2.5"/><circle cx="6.5" cy="12.5" r="2.5"/><path d="M12 2a10 10 0 1 0 0 20 2 2 0 0 0 0-4 2 2 0 0 1 0-4h2a4 4 0 0 0 4-4 8 8 0 0 0-6-8z"/></svg>Creative Center</a>
+      <div class="grp">Clients &amp; Funding</div>
+      <a href="#"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19V5a2 2 0 0 1 2-2h11l3 3v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"/><path d="M8 7h7M8 11h7M8 15h4"/></svg>Knowledge Center</a>
+      <a href="#"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/></svg>Client Command</a>
+      <a href="#"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l8 4v6c0 5-3.5 8-8 10-4.5-2-8-5-8-10V6z"/><path d="M9 12l2 2 4-4"/></svg>Dispute Builder</a>
+      <a href="#"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M5 21V10M19 21V10M3 10l9-6 9 6"/></svg>Funding Engine</a>
+      <div class="grp">Growth</div>
+      <a href="#"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 18v-6M9 18V6M15 18v-9M21 18v-3"/></svg>Sales Center</a>
+      <a href="#"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M7 14l3-3 3 3 5-6"/></svg>Analytics Center</a>
+    </nav>
+    <div class="foot">TRIAD T ENTERPRISE™<br/>AI Command Center · v1.0</div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main">
+    <header class="topbar">
+      <div class="search">
+        <svg class="si" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#7d735c" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg>
+        <input placeholder="Search clients, content, knowledge…" />
+      </div>
+      <div class="tb-right">
+        <span class="pill">Demo mode</span>
+        <div class="userchip"><div class="avatar">TH</div><div><b>Tyrese Hughes</b><small>owner</small></div></div>
+      </div>
+    </header>
+
+    <div class="content">
+      <div class="pagehead">
+        <div class="hi"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg></div>
+        <div>
+          <h1>Command Center</h1>
+          <p>Your daily operating picture — content, leads, clients, and revenue at a glance.</p>
+        </div>
+        <div class="actions"><button class="btn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1a1505" stroke-width="2.2"><path d="M12 3l1.9 4.8L19 9.5l-4.1 2.9L16 18l-4-2.6L8 18l1.1-5.6L5 9.5l5.1-1.7z"/></svg>Generate Content</button></div>
+      </div>
+
+      <!-- Content metrics -->
+      <div class="sec-title"><span class="dot"></span> Content Metrics</div>
+      <div class="grid g4">
+        <div class="metric"><div class="lab">Posts Published</div><div class="row"><span class="val">18</span><span class="delta up">↑ 12.5%</span></div><div class="hint">this week</div></div>
+        <div class="metric"><div class="lab">Total Reach</div><div class="row"><span class="val">412K</span><span class="delta up">↑ 28.4%</span></div><div class="hint">30-day rolling</div></div>
+        <div class="metric"><div class="lab">Engagement Rate</div><div class="row"><span class="val">6.8%</span><span class="delta up">↑ 1.9%</span></div><div class="hint">avg / post</div></div>
+        <div class="metric"><div class="lab">Saves + Shares</div><div class="row"><span class="val">9.2K</span><span class="delta up">↑ 34.1%</span></div><div class="hint">high-intent signal</div></div>
+      </div>
+
+      <!-- Revenue metrics -->
+      <div class="sec-title"><span class="dot"></span> Revenue Metrics</div>
+      <div class="grid g4">
+        <div class="metric"><div class="lab">MRR</div><div class="row"><span class="val">$28,940</span><span class="delta up">↑ 14.2%</span></div><div class="hint">recurring</div></div>
+        <div class="metric"><div class="lab">Funding Commissions</div><div class="row"><span class="val">$41,200</span><span class="delta up">↑ 31.8%</span></div><div class="hint">this month</div></div>
+        <div class="metric"><div class="lab">Total Revenue</div><div class="row"><span class="val">$92,640</span><span class="delta up">↑ 19.5%</span></div><div class="hint">this month</div></div>
+        <div class="metric"><div class="lab">LTV : CAC</div><div class="row"><span class="val">5.4x</span><span class="delta up">↑ 8.0%</span></div><div class="hint">blended</div></div>
+      </div>
+
+      <!-- Charts -->
+      <div class="grid g2" style="margin-top:26px">
+        <div class="card">
+          <div class="ch"><h3>Revenue Trend</h3><p>Recurring vs. funding commissions (6 months)</p></div>
+          <div class="cb">
+            <svg viewBox="0 0 520 230" width="100%" height="230" preserveAspectRatio="none">
+              <defs>
+                <linearGradient id="g1" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#D4AF37" stop-opacity=".5"/><stop offset="100%" stop-color="#D4AF37" stop-opacity="0"/></linearGradient>
+                <linearGradient id="g2" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#E6C65A" stop-opacity=".35"/><stop offset="100%" stop-color="#E6C65A" stop-opacity="0"/></linearGradient>
+              </defs>
+              <path d="M0,150 L104,135 L208,120 L312,95 L416,70 L520,45 L520,230 L0,230 Z" fill="url(#g2)"/>
+              <path d="M0,150 L104,135 L208,120 L312,95 L416,70 L520,45" fill="none" stroke="#E6C65A" stroke-width="2.5"/>
+              <path d="M0,178 L104,170 L208,166 L312,150 L416,138 L520,120 L520,230 L0,230 Z" fill="url(#g1)"/>
+              <path d="M0,178 L104,170 L208,166 L312,150 L416,138 L520,120" fill="none" stroke="#D4AF37" stroke-width="2.5"/>
+            </svg>
+            <div class="xax"><span>Dec</span><span>Jan</span><span>Feb</span><span>Mar</span><span>Apr</span><span>May</span></div>
+            <div class="legend"><span class="lg"><span class="sw" style="background:#D4AF37"></span>Recurring</span><span class="lg"><span class="sw" style="background:#E6C65A"></span>Funding</span></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="ch"><h3>Lead Pipeline</h3><p>Leads → consults → new clients</p></div>
+          <div class="cb">
+            <div class="chartwrap">
+              <div class="bargrp"><div class="bar b1" style="height:60%"></div><div class="bar b2" style="height:18%"></div><div class="bar b3" style="height:8%"></div></div>
+              <div class="bargrp"><div class="bar b1" style="height:70%"></div><div class="bar b2" style="height:22%"></div><div class="bar b3" style="height:11%"></div></div>
+              <div class="bargrp"><div class="bar b1" style="height:66%"></div><div class="bar b2" style="height:20%"></div><div class="bar b3" style="height:9%"></div></div>
+              <div class="bargrp"><div class="bar b1" style="height:82%"></div><div class="bar b2" style="height:24%"></div><div class="bar b3" style="height:13%"></div></div>
+              <div class="bargrp"><div class="bar b1" style="height:91%"></div><div class="bar b2" style="height:27%"></div><div class="bar b3" style="height:15%"></div></div>
+              <div class="bargrp"><div class="bar b1" style="height:100%"></div><div class="bar b2" style="height:29%"></div><div class="bar b3" style="height:16%"></div></div>
+            </div>
+            <div class="xax"><span>Dec</span><span>Jan</span><span>Feb</span><span>Mar</span><span>Apr</span><span>May</span></div>
+            <div class="legend"><span class="lg"><span class="sw b1"></span>Leads</span><span class="lg"><span class="sw b2"></span>Consults</span><span class="lg"><span class="sw b3"></span>New Clients</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Priorities + gains -->
+      <div class="grid g3" style="margin-top:16px">
+        <div class="card">
+          <div class="ch"><h3>Today's Priorities</h3><p>Open tasks across the team</p></div>
+          <div class="cb">
+            <div class="task"><div><b>Send Round 2 letters for Jasmine (EQ/EX/TU)</b><small>Jasmine Carter · Marcus Allen · due Jun 2, 2026</small></div><span class="tag t-high">high</span></div>
+            <div class="task"><div><b>File CFPB complaint for Devon (TransUnion)</b><small>Devon Brooks · Dana Whitfield · due Jun 1, 2026</small></div><span class="tag t-urgent">urgent</span></div>
+            <div class="task"><div><b>Follow up with Sofia after consult</b><small>Sofia Ramirez · Marcus Allen · due Jun 3, 2026</small></div><span class="tag t-high">high</span></div>
+            <div class="task"><div><b>Record 3 TOF reels for the week</b><small>— · Tyrese Hughes · due Jun 4, 2026</small></div><span class="tag t-med">medium</span></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="ch"><h3>Top Score Gains</h3><p>Biggest lifts since enrollment</p></div>
+          <div class="cb">
+            <div class="gain"><div><b>Marcus Greene</b><small>559 → 742</small></div><span class="badge-g">+183</span></div>
+            <div class="gain"><div><b>Andre Wallace</b><small>612 → 728</small></div><span class="badge-g">+116</span></div>
+            <div class="gain"><div><b>Devon Brooks</b><small>581 → 668</small></div><span class="badge-g">+87</span></div>
+            <div class="gain"><div><b>Jasmine Carter</b><small>548 → 631</small></div><span class="badge-g">+83</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>
