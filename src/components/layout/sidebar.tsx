@@ -221,7 +221,7 @@ export function BrandMark({ collapsed = false }: { collapsed?: boolean }) {
     >
       <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-gold/25 bg-gold/10 p-1 shadow-gold">
         <Image
-          src="/brand/tte-mark.png"
+          src={`${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/brand/tte-mark.png`}
           alt="TRIAD T Enterprise"
           width={28}
           height={28}
