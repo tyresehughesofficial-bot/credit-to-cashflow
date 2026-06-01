@@ -17,7 +17,7 @@ Built with **Next.js (App Router) · TypeScript · Tailwind CSS · Shadcn-style 
 
 | # | Module | Route | What it does |
 |---|--------|-------|--------------|
-| 1 | **Command Center Dashboard** | `/dashboard` | Daily content, lead, client & revenue metrics + charts |
+| 1 | **Command Center Dashboard** | `/command-center` | Daily content, lead, client & revenue metrics + charts |
 | 2 | **AI Content Engine** | `/content-engine` | Generate TOF/MOF/BOF ideas, reels, carousels, captions, CTAs |
 | 3 | **Viral Hook Library** | `/hooks` | Save, categorize, search & tag hooks by psychology type |
 | 4 | **Script Writer** | `/script-writer` | Reel, carousel, sales scripts, captions & VSLs |

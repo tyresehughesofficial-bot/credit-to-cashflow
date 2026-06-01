@@ -23,15 +23,8 @@ public link like `https://triad-t-command-center.vercel.app/command-center`.
 
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/tyresehughesofficial-bot/credit-to-cashflow&project-name=triad-t-command-center)
 
-This clones the branch into a new Vercel project. Framework + build settings are detected
+This clones the repo into a new Vercel project. Framework + build settings are detected
 automatically; no env vars needed.
-
-## Option C — Merge to `main` for automatic production deploys
-
-`main` is currently empty. If you merge this branch into `main`, Vercel's default
-production deployments "just work" with no branch juggling. Tell me and I'll fast-forward
-`main` for you (with your permission), or you can open a PR from
-`claude/wizardly-hypatia-oQMwZ` → `main` and merge it.
 
 ---
 
