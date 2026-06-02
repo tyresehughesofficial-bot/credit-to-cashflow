@@ -1,10 +1,14 @@
+"use client";
+
 import { ShieldAlert } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { PageHeader } from "@/components/shared/page-header";
 import { CategoryChip, SectionLabel, Stat } from "@/components/intelligence/bits";
 import { DetectedOpportunities } from "@/components/intelligence/opp-list";
-import { OBJECTIONS } from "@/lib/intelligence/data";
+import { DataTable } from "@/components/intelligence/data-table";
+import { useCollection } from "@/lib/db/use-collection";
+import { COLL, FIELDS, SEED } from "@/lib/intelligence/collections";
 import type { Objection } from "@/lib/intelligence/types";
 
 const TYPE_CLASS: Record<Objection["type"], string> = {
@@ -15,6 +19,7 @@ const TYPE_CLASS: Record<Objection["type"], string> = {
 };
 
 export default function ObjectionIntelligence() {
+  const OBJECTIONS = useCollection(COLL.objections, SEED[COLL.objections]).records as unknown as Objection[];
   const sorted = [...OBJECTIONS].sort((a, b) => b.frequency - a.frequency);
 
   return (
@@ -46,6 +51,9 @@ export default function ObjectionIntelligence() {
           </div>
         ))}
       </div>
+
+      <SectionLabel>Objection Records — Add / Edit / Import</SectionLabel>
+      <DataTable collection={COLL.objections} seed={SEED[COLL.objections]} fields={FIELDS[COLL.objections]} title="Objections" />
 
       <DetectedOpportunities source="objection" />
     </div>

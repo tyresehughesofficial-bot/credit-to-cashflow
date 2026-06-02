@@ -1,11 +1,18 @@
+"use client";
+
 import { Trophy } from "lucide-react";
 
 import { PageHeader } from "@/components/shared/page-header";
 import { CategoryChip, SectionLabel, Stat } from "@/components/intelligence/bits";
 import { DetectedOpportunities } from "@/components/intelligence/opp-list";
-import { CLIENT_PATTERNS } from "@/lib/intelligence/data";
+import { DataTable } from "@/components/intelligence/data-table";
+import { useCollection } from "@/lib/db/use-collection";
+import { COLL, FIELDS, SEED } from "@/lib/intelligence/collections";
+import type { ClientPattern } from "@/lib/intelligence/types";
 
 export default function ClientIntelligence() {
+  const CLIENT_PATTERNS = useCollection(COLL.clientPatterns, SEED[COLL.clientPatterns])
+    .records as unknown as ClientPattern[];
   return (
     <div>
       <PageHeader
@@ -36,6 +43,9 @@ export default function ClientIntelligence() {
           </div>
         ))}
       </div>
+
+      <SectionLabel>Client Pattern Records — Add / Edit / Import</SectionLabel>
+      <DataTable collection={COLL.clientPatterns} seed={SEED[COLL.clientPatterns]} fields={FIELDS[COLL.clientPatterns]} title="Client Patterns" />
 
       <DetectedOpportunities source="client" />
     </div>

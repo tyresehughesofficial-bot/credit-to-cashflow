@@ -7,9 +7,24 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { CategoryChip, FunnelChip, PlatformChip, SourceChip } from "@/components/intelligence/bits";
 import { ScoreBars, ScoreRing, TierBadge } from "@/components/intelligence/score";
-import { generateOutputs } from "@/lib/intelligence/generators";
+import { generateOutputs, generatePackage } from "@/lib/intelligence/generators";
 import { setOppStatus, statusOf, useOppStatuses } from "@/lib/intelligence/store";
+import { collectionRemoveBy, collectionUpsert } from "@/lib/db/use-collection";
 import type { Opportunity, OppStatus } from "@/lib/intelligence/types";
+
+/** Persist the generated content package to the approved_ideas collection. */
+function recordApproval(opp: Opportunity) {
+  const pkg = generatePackage(opp);
+  collectionUpsert("approved_ideas", {
+    id: opp.id,
+    opportunityId: opp.id,
+    title: opp.title,
+    category: opp.category,
+    totalScore: opp.total,
+    ...pkg,
+  });
+}
+const clearApproval = (id: string) => collectionRemoveBy("approved_ideas", "opportunityId", id);
 
 const STATUS_RING: Record<OppStatus, string> = {
   new: "border-border",
@@ -140,21 +155,45 @@ export function OpportunityCard({ opp, defaultOpen = false }: { opp: Opportunity
           size="sm"
           variant={status === "approved" ? "default" : "outline"}
           className={cn("h-8", status === "approved" && "bg-success text-background hover:bg-success/90")}
-          onClick={() => setOppStatus(opp.id, "approved")}
+          onClick={() => {
+            const willApprove = status !== "approved";
+            setOppStatus(opp.id, "approved");
+            if (willApprove) recordApproval(opp);
+            else clearApproval(opp.id);
+          }}
         >
           <Check className="mr-1 h-3.5 w-3.5" /> Approve
         </Button>
-        <Button size="sm" variant="outline" className="h-8" onClick={() => setOppStatus(opp.id, "saved")}>
+        <Button
+          size="sm"
+          variant="outline"
+          className="h-8"
+          onClick={() => {
+            setOppStatus(opp.id, "saved");
+            clearApproval(opp.id);
+          }}
+        >
           <Bookmark className={cn("mr-1 h-3.5 w-3.5", status === "saved" && "fill-gold text-gold")} /> Save
         </Button>
-        <Button size="sm" variant="outline" className="h-8" onClick={() => setOppStatus(opp.id, "archived")}>
+        <Button
+          size="sm"
+          variant="outline"
+          className="h-8"
+          onClick={() => {
+            setOppStatus(opp.id, "archived");
+            clearApproval(opp.id);
+          }}
+        >
           <Archive className="mr-1 h-3.5 w-3.5" /> Archive
         </Button>
         <Button
           size="sm"
           variant="ghost"
           className="ml-auto h-8 text-muted-foreground hover:text-destructive"
-          onClick={() => setOppStatus(opp.id, "rejected")}
+          onClick={() => {
+            setOppStatus(opp.id, "rejected");
+            clearApproval(opp.id);
+          }}
         >
           <X className="mr-1 h-3.5 w-3.5" /> Reject
         </Button>

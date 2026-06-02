@@ -8,8 +8,10 @@ import { PageHeader } from "@/components/shared/page-header";
 import { Input } from "@/components/ui/input";
 import { PlatformChip, SectionLabel, Stat } from "@/components/intelligence/bits";
 import { DetectedOpportunities } from "@/components/intelligence/opp-list";
-import { HOOKS } from "@/lib/intelligence/data";
-import type { HookType } from "@/lib/intelligence/types";
+import { DataTable } from "@/components/intelligence/data-table";
+import { useCollection } from "@/lib/db/use-collection";
+import { COLL, FIELDS, SEED } from "@/lib/intelligence/collections";
+import type { HookType, HookEntry } from "@/lib/intelligence/types";
 
 const TYPES: HookType[] = ["Curiosity", "Fear", "Authority", "Myth", "Contrarian", "Proof", "Story", "Urgency"];
 
@@ -17,6 +19,7 @@ export default function HookIntelligence() {
   const [q, setQ] = useState("");
   const [type, setType] = useState<HookType | "All">("All");
   const [favs, setFavs] = useState<Record<string, boolean>>({});
+  const HOOKS = useCollection(COLL.hooks, SEED[COLL.hooks]).records as unknown as HookEntry[];
 
   const list = useMemo(() => {
     return HOOKS.filter((h) => {
@@ -88,6 +91,9 @@ export default function HookIntelligence() {
           </div>
         ))}
       </div>
+
+      <SectionLabel>Hook Database — Add / Edit / Import</SectionLabel>
+      <DataTable collection={COLL.hooks} seed={SEED[COLL.hooks]} fields={FIELDS[COLL.hooks]} title="Hooks" />
 
       <DetectedOpportunities source="hook" />
     </div>

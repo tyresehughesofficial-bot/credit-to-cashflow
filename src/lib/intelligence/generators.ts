@@ -60,6 +60,43 @@ function keyword(opp: Opportunity): string {
   return opp.category.split(" ")[0].toUpperCase();
 }
 
+const HASHTAGS: Record<string, string[]> = {
+  "Credit Repair": ["#creditrepair", "#creditrestoration", "#fixyourcredit"],
+  Funding: ["#businessfunding", "#fundingexpert", "#getfunded"],
+  "Business Credit": ["#businesscredit", "#net30", "#fundable"],
+  "Personal Credit": ["#creditscore", "#creditbuilding", "#700club"],
+  "Credit Myths": ["#creditmyths", "#creditfacts", "#realtalk"],
+};
+
+/** The full package created when an opportunity is approved → fed to production. */
+export interface ContentPackage {
+  tof: string;
+  mof: string;
+  bof: string;
+  hook: string;
+  caption: string;
+  cta: string;
+  format: string;
+  platform: string;
+}
+
+export function generatePackage(opp: Opportunity): ContentPackage {
+  const outs = generateOutputs(opp);
+  const byStage = Object.fromEntries(outs.map((o) => [o.stage, o]));
+  const tags = (HASHTAGS[opp.category] ?? ["#triadt", "#crediteducation"]).join(" ");
+  const caption = `${opp.hook}\n\nReal talk — here's what most people get wrong about ${opp.category.toLowerCase()}, and the one move that actually works.\n\n${opp.cta}\n\n${tags}`;
+  return {
+    tof: byStage.TOF?.body ?? "",
+    mof: byStage.MOF?.body ?? "",
+    bof: byStage.BOF?.body ?? "",
+    hook: opp.hook,
+    caption,
+    cta: opp.cta,
+    format: opp.format,
+    platform: opp.platform,
+  };
+}
+
 /** Suggested hook variants in different psychological registers. */
 export function hookVariants(opp: Opportunity): { type: string; hook: string }[] {
   return [

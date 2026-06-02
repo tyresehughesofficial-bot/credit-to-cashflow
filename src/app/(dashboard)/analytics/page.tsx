@@ -23,6 +23,55 @@ import {
   REVENUE_METRICS,
   REVENUE_SERIES,
 } from "@/lib/data/metrics";
+import { SectionLabel, Stat } from "@/components/intelligence/bits";
+import { DataTable } from "@/components/intelligence/data-table";
+import { useCollection } from "@/lib/db/use-collection";
+import { useProductionItems } from "@/lib/intelligence/production";
+import { ANALYTICS_FIELDS, ANALYTICS_SEED, COLL } from "@/lib/intelligence/collections";
+
+interface Kpi {
+  id: string;
+  label: string;
+  value: string;
+  delta: string;
+  period: string;
+  group: string;
+}
+
+function LiveKpis() {
+  const metrics = useCollection(COLL.analytics, ANALYTICS_SEED).records as unknown as Kpi[];
+  const published = useProductionItems().filter((i) => i.stage === "Published").length;
+
+  const value = (m: Kpi) => {
+    const raw = m.id === "posts" ? String(published) : String(m.value ?? "");
+    if (/^\d+$/.test(raw)) {
+      const n = Number(raw);
+      if (m.group === "revenue") return `$${n.toLocaleString()}`;
+      return n >= 100000 ? `${Math.round(n / 1000)}K` : n.toLocaleString();
+    }
+    return raw;
+  };
+
+  return (
+    <>
+      <SectionLabel>Live KPIs — database-driven (editable)</SectionLabel>
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+        {metrics.map((m) => (
+          <Stat
+            key={m.id}
+            label={m.label}
+            value={value(m)}
+            sub={`${m.delta ? m.delta + " · " : ""}${m.period}${m.id === "posts" ? " (from pipeline)" : ""}`}
+            accent={m.id === "revenue"}
+          />
+        ))}
+      </div>
+      <div className="mt-4">
+        <DataTable collection={COLL.analytics} seed={ANALYTICS_SEED} fields={ANALYTICS_FIELDS} title="Analytics Metrics" />
+      </div>
+    </>
+  );
+}
 
 export default function AnalyticsPage() {
   return (
@@ -33,7 +82,10 @@ export default function AnalyticsPage() {
         description="Deep-dive analytics across content, leads, clients, and revenue."
       />
 
-      <Tabs defaultValue="content">
+      <LiveKpis />
+
+      <div className="mt-8">
+        <Tabs defaultValue="content">
         <TabsList className="flex-wrap">
           <TabsTrigger value="content">Content</TabsTrigger>
           <TabsTrigger value="leads">Leads</TabsTrigger>
@@ -130,7 +182,8 @@ export default function AnalyticsPage() {
             </Card>
           </div>
         </TabsContent>
-      </Tabs>
+        </Tabs>
+      </div>
     </div>
   );
 }

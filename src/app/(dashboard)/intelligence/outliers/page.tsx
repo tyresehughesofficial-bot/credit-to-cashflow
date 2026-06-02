@@ -5,11 +5,15 @@ import { Flame, Zap } from "lucide-react";
 import { PageHeader } from "@/components/shared/page-header";
 import { CategoryChip, PlatformChip, SectionLabel, Stat } from "@/components/intelligence/bits";
 import { DetectedOpportunities } from "@/components/intelligence/opp-list";
-import { OUTLIERS } from "@/lib/intelligence/data";
+import { DataTable } from "@/components/intelligence/data-table";
+import { useCollection } from "@/lib/db/use-collection";
+import { COLL, FIELDS, SEED } from "@/lib/intelligence/collections";
+import type { Outlier } from "@/lib/intelligence/types";
 
 const fmt = (n: number) => (n >= 1000 ? `${(n / 1000).toFixed(0)}k` : `${n}`);
 
 export default function ViralOutliers() {
+  const OUTLIERS = useCollection(COLL.outliers, SEED[COLL.outliers]).records as unknown as Outlier[];
   const sorted = [...OUTLIERS].sort((a, b) => b.multiple - a.multiple);
   const topMultiple = sorted[0];
 
@@ -80,6 +84,9 @@ export default function ViralOutliers() {
           </div>
         ))}
       </div>
+
+      <SectionLabel>Outlier Records — Add / Edit / Import</SectionLabel>
+      <DataTable collection={COLL.outliers} seed={SEED[COLL.outliers]} fields={FIELDS[COLL.outliers]} title="Viral Outliers" />
 
       <DetectedOpportunities source="outlier" />
     </div>

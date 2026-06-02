@@ -6,7 +6,10 @@ import { cn } from "@/lib/utils";
 import { PageHeader } from "@/components/shared/page-header";
 import { CategoryChip, SectionLabel, Stat } from "@/components/intelligence/bits";
 import { DetectedOpportunities } from "@/components/intelligence/opp-list";
-import { DEMAND_SIGNALS } from "@/lib/intelligence/data";
+import { DataTable } from "@/components/intelligence/data-table";
+import { useCollection } from "@/lib/db/use-collection";
+import { COLL, FIELDS, SEED } from "@/lib/intelligence/collections";
+import type { DemandSignal } from "@/lib/intelligence/types";
 import type { DemandType } from "@/lib/intelligence/types";
 
 const TYPE_CLASS: Record<DemandType, string> = {
@@ -19,6 +22,7 @@ const TYPE_CLASS: Record<DemandType, string> = {
 };
 
 export default function AudienceDemand() {
+  const DEMAND_SIGNALS = useCollection(COLL.questions, SEED[COLL.questions]).records as unknown as DemandSignal[];
   const sorted = [...DEMAND_SIGNALS].sort((a, b) => b.mentions - a.mentions);
   const total = DEMAND_SIGNALS.reduce((a, d) => a + d.mentions, 0);
 
@@ -53,6 +57,9 @@ export default function AudienceDemand() {
           </div>
         ))}
       </div>
+
+      <SectionLabel>Extracted Questions — Add / Edit / Import</SectionLabel>
+      <DataTable collection={COLL.questions} seed={SEED[COLL.questions]} fields={FIELDS[COLL.questions]} title="Demand Signals" />
 
       <DetectedOpportunities source="demand" />
     </div>

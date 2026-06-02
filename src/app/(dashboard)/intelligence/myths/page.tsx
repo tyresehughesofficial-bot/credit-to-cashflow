@@ -1,12 +1,18 @@
+"use client";
+
 import { AlertOctagon } from "lucide-react";
 
 import { PageHeader } from "@/components/shared/page-header";
 import { CategoryChip, PlatformChip, SectionLabel, Stat } from "@/components/intelligence/bits";
 import { DetectedOpportunities } from "@/components/intelligence/opp-list";
 import { FunnelChip } from "@/components/intelligence/bits";
-import { MYTHS } from "@/lib/intelligence/data";
+import { DataTable } from "@/components/intelligence/data-table";
+import { useCollection } from "@/lib/db/use-collection";
+import { COLL, FIELDS, SEED } from "@/lib/intelligence/collections";
+import type { Myth } from "@/lib/intelligence/types";
 
 export default function CreditMythIntelligence() {
+  const MYTHS = useCollection(COLL.myths, SEED[COLL.myths]).records as unknown as Myth[];
   const sorted = [...MYTHS].sort((a, b) => b.prevalence - a.prevalence);
 
   return (
@@ -58,6 +64,9 @@ export default function CreditMythIntelligence() {
           </div>
         ))}
       </div>
+
+      <SectionLabel>Myth Records — Add / Edit / Import</SectionLabel>
+      <DataTable collection={COLL.myths} seed={SEED[COLL.myths]} fields={FIELDS[COLL.myths]} title="Credit Myths" />
 
       <DetectedOpportunities source="myth" />
     </div>

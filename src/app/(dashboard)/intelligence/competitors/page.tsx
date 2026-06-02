@@ -6,11 +6,17 @@ import { PageHeader } from "@/components/shared/page-header";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { PlatformChip, SectionLabel, Stat } from "@/components/intelligence/bits";
 import { DetectedOpportunities } from "@/components/intelligence/opp-list";
-import { COMPETITOR_POSTS, CREATORS, TRENDING_TOPICS } from "@/lib/intelligence/data";
+import { DataTable } from "@/components/intelligence/data-table";
+import { useCollection } from "@/lib/db/use-collection";
+import { COLL, FIELDS, SEED } from "@/lib/intelligence/collections";
+import { CREATORS, TRENDING_TOPICS } from "@/lib/intelligence/data";
+import type { CompetitorPost } from "@/lib/intelligence/types";
 
 const fmt = (n: number) => (n >= 1000 ? `${(n / 1000).toFixed(n >= 10000 ? 0 : 1)}k` : `${n}`);
 
 export default function CompetitorIntelligence() {
+  const COMPETITOR_POSTS = useCollection(COLL.competitorPosts, SEED[COLL.competitorPosts])
+    .records as unknown as CompetitorPost[];
   const topPosts = [...COMPETITOR_POSTS].sort((a, b) => b.views - a.views);
   const fastest = [...CREATORS].sort((a, b) => b.growth - a.growth);
 
@@ -107,6 +113,9 @@ export default function CompetitorIntelligence() {
           </div>
         </div>
       </div>
+
+      <SectionLabel>Competitor Posts — Add / Edit / Import</SectionLabel>
+      <DataTable collection={COLL.competitorPosts} seed={SEED[COLL.competitorPosts]} fields={FIELDS[COLL.competitorPosts]} title="Competitor Posts" />
 
       <DetectedOpportunities source="competitor" />
     </div>
