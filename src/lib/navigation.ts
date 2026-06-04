@@ -1,6 +1,7 @@
 import {
   Home,
   LayoutDashboard,
+  Library,
   Radar,
   Flame,
   MessagesSquare,
@@ -85,6 +86,12 @@ export const NAV_SECTIONS: NavSection[] = [
         href: "/command-center",
         icon: LayoutDashboard,
         description: "Daily content, lead, client & revenue metrics at a glance.",
+      },
+      {
+        label: "Knowledge Vault",
+        href: "/knowledge-vault",
+        icon: Library,
+        description: "RAG knowledge base + 4 AI agents with intelligent routing.",
       },
     ],
   },
