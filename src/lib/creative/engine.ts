@@ -4,16 +4,15 @@ import { retrieve } from "@/lib/vault/engine";
 /**
  * Creative Asset Generation Engine.
  * Inputs → knowledge routing (Vault) → creative direction → provider prompts.
- * The actual pixels are produced by `providers.ts` (OpenAI / Firefly, or a
- * branded SVG mock when no key is configured).
+ * The actual pixels are produced by `providers.ts` (OpenAI / Firefly).
  */
 
 export type ProviderId = "OpenAI" | "Adobe Firefly" | "Canva";
 
 export interface AssetType {
   id: string;
-  ratio: string; // "16:9"
-  size: string; // OpenAI size hint
+  ratio: string;
+  size: string; // OpenAI size hint (WxH)
   motion?: boolean;
 }
 
@@ -108,15 +107,12 @@ export function buildDirection(input: CreativeInput): CreativeDirection {
     `A ${input.assetType.toLowerCase()} for ${input.industry} (${input.platform}) promoting "${input.offer || input.topic}". ` +
     `Lead with the core promise; keep it premium and conversion-focused. ` +
     (grounding.length ? `Grounded in Triad T knowledge: ${grounding.join("; ")}.` : "");
-  const concept =
-    `Hero focal element representing "${input.topic}", ${style.descriptor}. Single clear message, no clutter.`;
-  const composition =
-    asset.motion
-      ? `Storyboard / motion frame at ${asset.ratio}: open on the hook, reveal the value, end on the CTA. Safe margins for captions.`
-      : `${asset.ratio} composition: focal subject on the rule-of-thirds, headline in the negative space, brand mark bottom-corner, generous breathing room.`;
+  const concept = `Hero focal element representing "${input.topic}", ${style.descriptor}. Single clear message, no clutter.`;
+  const composition = asset.motion
+    ? `Storyboard / motion frame at ${asset.ratio}: open on the hook, reveal the value, end on the CTA. Safe margins for captions.`
+    : `${asset.ratio} composition: focal subject on the rule-of-thirds, headline in the negative space, brand mark bottom-corner, generous breathing room.`;
   const typography = style.typography;
-  const brandAlignment =
-    `On-brand for "${style.id}". Palette ${style.palette.primary}/${style.palette.bg} with ${style.palette.accent} accents. Tone: ${style.descriptor.split(",")[0]}.`;
+  const brandAlignment = `On-brand for "${style.id}". Palette ${style.palette.primary}/${style.palette.bg} with ${style.palette.accent} accents. Tone: ${style.descriptor.split(",")[0]}.`;
 
   return {
     direction,
@@ -130,12 +126,7 @@ export function buildDirection(input: CreativeInput): CreativeDirection {
   };
 }
 
-function buildPrompts(
-  input: CreativeInput,
-  style: BrandStyle,
-  asset: AssetType,
-  grounding: string[],
-) {
+function buildPrompts(input: CreativeInput, style: BrandStyle, asset: AssetType, grounding: string[]) {
   const ground = grounding.length ? ` Informed by: ${grounding.join("; ")}.` : "";
   const openai =
     `${input.assetType} for ${input.platform}, ${asset.ratio}. Subject: ${input.topic} (${input.industry}). ` +

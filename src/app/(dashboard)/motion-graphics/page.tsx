@@ -4,7 +4,6 @@ import { useMemo, useState } from "react";
 import {
   Clapperboard,
   Wand2,
-  Loader2,
   Download,
   Copy,
   Check,
@@ -15,6 +14,10 @@ import {
   ExternalLink,
   Layers,
   Sparkles,
+  Link2,
+  Save,
+  AlertTriangle,
+  Bot,
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -31,7 +34,7 @@ import {
   type CreativeInput,
   type ProviderId,
 } from "@/lib/creative/engine";
-import { generateAsset } from "@/lib/creative/providers";
+import { generateAsset, type GenStatus } from "@/lib/creative/providers";
 import { isSupabaseConfigured } from "@/lib/supabase/client";
 
 const COLLECTION = "creative_assets";
@@ -59,12 +62,21 @@ const copy = (t: string) => {
   }
 };
 
+interface GenState {
+  status: GenStatus | "idle" | "loading";
+  assetUrl?: string;
+  provider?: string;
+  width?: number;
+  height?: number;
+  fileSize?: number;
+  error?: string;
+}
+
 export default function CreativeStudio() {
   const { records, add, update, remove } = useCollection(COLLECTION, ASSET_SEED);
   const [form, setForm] = useState<CreativeInput>(DEFAULTS);
   const [dir, setDir] = useState<CreativeDirection | null>(null);
-  const [asset, setAsset] = useState<{ url: string; real: boolean; provider: string } | null>(null);
-  const [busy, setBusy] = useState(false);
+  const [gen, setGen] = useState<GenState>({ status: "idle" });
   const [flash, setFlash] = useState<string | null>(null);
   const [q, setQ] = useState("");
   const [filter, setFilter] = useState("all");
@@ -79,31 +91,41 @@ export default function CreativeStudio() {
 
   async function generate() {
     if (!form.topic.trim() && !form.projectName.trim()) return;
-    setBusy(true);
     const direction = buildDirection(form);
     setDir(direction);
-    try {
-      const out = await generateAsset(form, direction);
-      setAsset({ url: out.assetUrl, real: out.real, provider: out.provider });
-      add({
-        projectName: form.projectName || form.topic,
-        assetType: form.assetType,
-        topic: form.topic,
-        industry: form.industry,
-        offer: form.offer,
-        platform: form.platform,
-        brandStyle: form.brandStyle,
-        provider: out.provider,
-        prompt: direction.prompts.openai,
-        assetUrl: out.assetUrl,
-        width: out.width,
-        height: out.height,
-        real: out.real,
-        createdAt: new Date().toISOString(),
-      } as unknown as Omit<Row, "id">);
-    } finally {
-      setBusy(false);
-    }
+    setGen({ status: "loading" });
+    const res = await generateAsset(form, direction);
+    setGen({
+      status: res.status,
+      assetUrl: res.assetUrl,
+      provider: res.provider,
+      width: res.width,
+      height: res.height,
+      fileSize: res.fileSize,
+      error: res.error,
+    });
+  }
+
+  function saveToLibrary() {
+    if (gen.status !== "generated" || !gen.assetUrl || !dir) return;
+    add({
+      projectName: form.projectName || form.topic,
+      assetType: form.assetType,
+      topic: form.topic,
+      industry: form.industry,
+      offer: form.offer,
+      platform: form.platform,
+      brandStyle: form.brandStyle,
+      provider: gen.provider,
+      prompt: dir.prompts.openai,
+      assetUrl: gen.assetUrl,
+      thumbnailUrl: gen.assetUrl,
+      fileSize: gen.fileSize ?? 0,
+      width: gen.width,
+      height: gen.height,
+      createdAt: new Date().toISOString(),
+    } as unknown as Omit<Row, "id">);
+    ping("saved");
   }
 
   async function regenerate(r: Row) {
@@ -119,15 +141,22 @@ export default function CreativeStudio() {
     };
     const direction = buildDirection(input);
     const out = await generateAsset(input, direction);
-    update(r.id, { assetUrl: out.assetUrl, real: out.real, prompt: direction.prompts.openai, createdAt: new Date().toISOString() });
+    if (out.status === "generated" && out.assetUrl) {
+      update(r.id, { assetUrl: out.assetUrl, thumbnailUrl: out.assetUrl, prompt: direction.prompts.openai, createdAt: new Date().toISOString() });
+    }
   }
 
   function download(url: string, name: string) {
     const a = document.createElement("a");
     a.href = url;
-    a.download = `${name || "asset"}.${url.startsWith("data:image/svg") ? "svg" : "png"}`;
+    a.download = `${(name || "asset").replace(/[^a-z0-9]+/gi, "-")}.png`;
     a.click();
   }
+
+  // provider launch helpers (used by missing-key / error / canva states)
+  const openChatGPT = () => { if (dir) { copy(dir.prompts.openai); window.open("https://chatgpt.com/", "_blank", "noopener"); } };
+  const openFirefly = () => { if (dir) { copy(dir.prompts.firefly); window.open("https://firefly.adobe.com/generate/images?prompt=" + encodeURIComponent(dir.prompts.firefly), "_blank", "noopener"); } };
+  const openCanva = () => { if (dir) { copy(dir.prompts.canva); window.open("https://www.canva.com/", "_blank", "noopener"); } };
 
   const filtered = useMemo(() => {
     return records.filter((r) => {
@@ -142,7 +171,7 @@ export default function CreativeStudio() {
       <PageHeader
         icon={<Clapperboard className="h-5 w-5" />}
         title="Creative Asset Generation Engine"
-        description="The creative department of Triad T — turn a brief into knowledge-grounded creative direction and a generated asset via OpenAI / Adobe Firefly / Canva, organized into projects."
+        description="The creative department of Triad T — turn a brief into knowledge-grounded creative direction and a real generated image via OpenAI / Adobe Firefly, organized into projects."
         actions={
           <span
             className={cn(
@@ -150,7 +179,7 @@ export default function CreativeStudio() {
               isSupabaseConfigured ? "bg-success/10 text-success" : "bg-gold/10 text-gold",
             )}
           >
-            {isSupabaseConfigured ? "Supabase connected" : "Preview mode (local)"}
+            {isSupabaseConfigured ? "Supabase connected" : "Storage: local"}
           </span>
         }
       />
@@ -215,9 +244,9 @@ export default function CreativeStudio() {
                 ))}
               </div>
             </F>
-            <Button className="w-full" onClick={generate} disabled={busy}>
-              {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Wand2 className="h-4 w-4" />}
-              {busy ? "Generating…" : "Generate"}
+            <Button className="w-full" onClick={generate} disabled={gen.status === "loading"}>
+              {gen.status === "loading" ? <GoldSpinner small /> : <Wand2 className="h-4 w-4" />}
+              {gen.status === "loading" ? "Generating…" : "Generate"}
             </Button>
           </div>
         </div>
@@ -232,7 +261,7 @@ export default function CreativeStudio() {
               </div>
               <p className="max-w-sm text-sm text-muted-foreground">
                 Fill the brief and hit <span className="text-gold">Generate</span>. The engine searches your knowledge
-                base, builds creative direction, writes provider prompts, and renders the asset.
+                base, builds creative direction, writes the provider prompt, and renders the image on the right.
               </p>
             </div>
           ) : (
@@ -260,80 +289,30 @@ export default function CreativeStudio() {
                   <p className="text-[10px] font-semibold uppercase tracking-wide text-gold">Knowledge used</p>
                   <div className="mt-1 flex flex-wrap gap-1.5">
                     {dir.sources.map((s) => (
-                      <a
-                        key={s.title}
-                        href={s.viewUrl ?? "#"}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="rounded-full border border-border bg-card px-2 py-0.5 text-[10px] text-muted-foreground hover:text-gold"
-                      >
+                      <a key={s.title} href={s.viewUrl ?? "#"} target="_blank" rel="noreferrer" className="rounded-full border border-border bg-card px-2 py-0.5 text-[10px] text-muted-foreground hover:text-gold">
                         {s.title}
                       </a>
                     ))}
                   </div>
                 </div>
               )}
-
-              {/* Asset prompt + provider actions */}
               <div className="rounded-lg border border-border bg-background/40 p-3">
                 <div className="flex items-center justify-between">
                   <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">Asset Prompt</p>
-                  <button
-                    onClick={() => { copy(dir.prompts.openai); ping("p"); }}
-                    className="inline-flex items-center gap-1 text-[11px] text-muted-foreground hover:text-gold"
-                  >
+                  <button onClick={() => { copy(dir.prompts.openai); ping("p"); }} className="inline-flex items-center gap-1 text-[11px] text-muted-foreground hover:text-gold">
                     {flash === "p" ? <Check className="h-3 w-3 text-success" /> : <Copy className="h-3 w-3" />} Copy
                   </button>
                 </div>
                 <p className="mt-1 whitespace-pre-wrap text-[12px] leading-relaxed">{dir.prompts.openai}</p>
               </div>
-              <div className="flex flex-wrap gap-2">
-                <Button size="sm" variant="outline" onClick={() => { copy(dir.prompts.firefly); ping("ff"); window.open("https://firefly.adobe.com/generate/images?prompt=" + encodeURIComponent(dir.prompts.firefly), "_blank", "noopener"); }}>
-                  {flash === "ff" ? <Check className="h-3.5 w-3.5 text-success" /> : <ExternalLink className="h-3.5 w-3.5" />} Open in Firefly
-                </Button>
-                <Button size="sm" variant="outline" onClick={() => { copy(dir.prompts.canva); ping("cv"); window.open("https://www.canva.com/", "_blank", "noopener"); }}>
-                  {flash === "cv" ? <Check className="h-3.5 w-3.5 text-success" /> : <ExternalLink className="h-3.5 w-3.5" />} Export to Canva
-                </Button>
-                <Button size="sm" variant="outline" onClick={() => { copy(dir.prompts.canva); ping("cb"); }}>
-                  {flash === "cb" ? <Check className="h-3.5 w-3.5 text-success" /> : <Copy className="h-3.5 w-3.5" />} Copy Canva Brief
-                </Button>
-              </div>
             </div>
           )}
         </div>
 
-        {/* RIGHT — Asset Preview */}
+        {/* RIGHT — Generated Asset */}
         <div className="h-fit rounded-xl border border-border bg-card p-4">
           <p className="text-sm font-semibold">Generated Asset</p>
-          {!asset ? (
-            <div className="mt-3 flex aspect-square items-center justify-center rounded-lg border border-dashed border-border text-center text-xs text-muted-foreground">
-              Your generated asset appears here.
-            </div>
-          ) : (
-            <div className="mt-3 space-y-2">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={asset.url} alt="Generated asset" className="w-full rounded-lg border border-border" />
-              <div className="flex items-center justify-between">
-                <span className={cn("rounded-full px-2 py-0.5 text-[10px] font-semibold", asset.real ? "bg-success/15 text-success" : "bg-gold/10 text-gold")}>
-                  {asset.real ? `${asset.provider} · live` : `${asset.provider} · preview mock`}
-                </span>
-                <div className="flex gap-1.5">
-                  <button onClick={() => download(asset.url, form.projectName || form.topic)} className="rounded p-1 text-muted-foreground hover:text-gold" title="Download">
-                    <Download className="h-4 w-4" />
-                  </button>
-                  <button onClick={generate} className="rounded p-1 text-muted-foreground hover:text-gold" title="Regenerate">
-                    <RefreshCw className="h-4 w-4" />
-                  </button>
-                </div>
-              </div>
-              {!asset.real && (
-                <p className="text-[10px] leading-relaxed text-muted-foreground">
-                  Add <code className="text-gold">NEXT_PUBLIC_OPENAI_API_KEY</code> (or the server Firefly keys) to render the
-                  real image from this exact prompt — the flow is unchanged.
-                </p>
-              )}
-            </div>
-          )}
+          <div className="mt-3">{renderAsset()}</div>
         </div>
       </div>
 
@@ -357,7 +336,7 @@ export default function CreativeStudio() {
 
         {filtered.length === 0 ? (
           <div className="rounded-xl border border-dashed border-border bg-card/50 p-10 text-center text-sm text-muted-foreground">
-            No assets yet. Generate your first creative above.
+            No saved assets yet. Generate an image and click <span className="text-gold">Save to Asset Library</span>.
           </div>
         ) : (
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
@@ -367,11 +346,10 @@ export default function CreativeStudio() {
                 <img src={String(r.assetUrl)} alt={String(r.projectName)} className="aspect-square w-full object-cover" />
                 <div className="p-2.5">
                   <p className="truncate text-[12px] font-medium">{String(r.projectName)}</p>
-                  <p className="truncate text-[10px] text-muted-foreground">
-                    {String(r.assetType)} · {String(r.provider)}
-                  </p>
+                  <p className="truncate text-[10px] text-muted-foreground">{String(r.assetType)} · {String(r.provider)}</p>
                   <div className="mt-2 flex items-center gap-1">
                     <IconBtn title="Download" onClick={() => download(String(r.assetUrl), String(r.projectName))}><Download className="h-3.5 w-3.5" /></IconBtn>
+                    <IconBtn title="Copy URL" onClick={() => { copy(String(r.assetUrl)); ping(`u-${r.id}`); }}>{flash === `u-${r.id}` ? <Check className="h-3.5 w-3.5 text-success" /> : <Link2 className="h-3.5 w-3.5" />}</IconBtn>
                     <IconBtn title="Copy prompt" onClick={() => { copy(String(r.prompt)); ping(`c-${r.id}`); }}>{flash === `c-${r.id}` ? <Check className="h-3.5 w-3.5 text-success" /> : <Copy className="h-3.5 w-3.5" />}</IconBtn>
                     <IconBtn title="Duplicate" onClick={() => { const { id: _i, ...rest } = r; add(rest as Omit<Row, "id">); }}><CopyPlus className="h-3.5 w-3.5" /></IconBtn>
                     <IconBtn title="Regenerate" onClick={() => regenerate(r)}><RefreshCw className="h-3.5 w-3.5" /></IconBtn>
@@ -384,6 +362,106 @@ export default function CreativeStudio() {
         )}
       </div>
     </div>
+  );
+
+  /* ───────── Generated Asset panel states ───────── */
+  function renderAsset() {
+    if (gen.status === "idle") {
+      return (
+        <div className="flex aspect-square items-center justify-center rounded-lg border border-dashed border-border text-center text-xs text-muted-foreground">
+          Your generated image appears here.
+        </div>
+      );
+    }
+    if (gen.status === "loading") {
+      return (
+        <div className="flex aspect-square flex-col items-center justify-center gap-3 rounded-lg border border-gold/25 bg-gradient-to-b from-gold/[0.05] to-transparent">
+          <GoldSpinner />
+          <p className="animate-pulse text-sm font-semibold text-gold">Generating asset…</p>
+          <p className="text-[11px] text-muted-foreground">{form.provider} · {form.assetType}</p>
+        </div>
+      );
+    }
+    if (gen.status === "generated" && gen.assetUrl) {
+      return (
+        <div className="space-y-3">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={gen.assetUrl} alt="Generated asset" className="w-full rounded-lg border border-border" />
+          <div className="flex items-center justify-between text-[11px]">
+            <span className="rounded-full bg-success/15 px-2 py-0.5 font-semibold text-success">Status: Generated</span>
+            <span className="text-muted-foreground">Provider: {gen.provider}{gen.width ? ` · ${gen.width}×${gen.height}` : ""}</span>
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <Button size="sm" variant="outline" onClick={() => download(gen.assetUrl!, form.projectName || form.topic)}>
+              <Download className="h-3.5 w-3.5" /> Download
+            </Button>
+            <Button size="sm" variant="outline" onClick={() => { copy(gen.assetUrl!); ping("url"); }}>
+              {flash === "url" ? <Check className="h-3.5 w-3.5 text-success" /> : <Link2 className="h-3.5 w-3.5" />} Copy image URL
+            </Button>
+            <Button size="sm" variant="outline" onClick={generate}>
+              <RefreshCw className="h-3.5 w-3.5" /> Regenerate
+            </Button>
+            <Button size="sm" onClick={saveToLibrary}>
+              {flash === "saved" ? <Check className="h-3.5 w-3.5" /> : <Save className="h-3.5 w-3.5" />} Save to Library
+            </Button>
+          </div>
+        </div>
+      );
+    }
+    if (gen.status === "canva") {
+      return (
+        <div className="space-y-3">
+          <div className="rounded-lg border border-gold/25 bg-gold/[0.04] p-3 text-[12px] leading-relaxed">
+            <p className="font-semibold text-gold">Canva is design-only</p>
+            <p className="mt-1 text-muted-foreground">No AI image is generated for Canva. Use the design brief below to build it in Canva.</p>
+            {dir && <p className="mt-2 whitespace-pre-wrap text-foreground">{dir.prompts.canva}</p>}
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <Button size="sm" onClick={openCanva}><ExternalLink className="h-3.5 w-3.5" /> Open in Canva</Button>
+            <Button size="sm" variant="outline" onClick={() => { if (dir) { copy(dir.prompts.canva); ping("cb"); } }}>
+              {flash === "cb" ? <Check className="h-3.5 w-3.5 text-success" /> : <Copy className="h-3.5 w-3.5" />} Copy Brief
+            </Button>
+          </div>
+        </div>
+      );
+    }
+    // missing_key or error → no fake image; show message + launch buttons
+    const isError = gen.status === "error";
+    return (
+      <div className="space-y-3">
+        <div className={cn("flex items-start gap-2 rounded-lg border p-3 text-[12px] leading-relaxed", isError ? "border-destructive/30 bg-destructive/[0.05]" : "border-gold/25 bg-gold/[0.04]")}>
+          <AlertTriangle className={cn("mt-0.5 h-4 w-4 shrink-0", isError ? "text-destructive" : "text-gold")} />
+          <span className="text-muted-foreground">
+            {isError
+              ? `Generation failed: ${gen.error}. The prompt is ready — generate manually below.`
+              : `${gen.provider} API key missing. Prompt generated, but in-app image generation is disabled. Set NEXT_PUBLIC_OPENAI_API_KEY (or the Firefly server keys) to render here — then use the buttons below in the meantime.`}
+          </span>
+        </div>
+        <div className="grid grid-cols-2 gap-2">
+          <Button size="sm" variant="outline" onClick={() => { if (dir) { copy(dir.prompts.openai); ping("cp"); } }}>
+            {flash === "cp" ? <Check className="h-3.5 w-3.5 text-success" /> : <Copy className="h-3.5 w-3.5" />} Copy Prompt
+          </Button>
+          <Button size="sm" variant="outline" onClick={openChatGPT}><Bot className="h-3.5 w-3.5" /> Open in ChatGPT</Button>
+          <Button size="sm" variant="outline" onClick={openFirefly}><ExternalLink className="h-3.5 w-3.5" /> Open in Firefly</Button>
+          <Button size="sm" variant="outline" onClick={openCanva}><ExternalLink className="h-3.5 w-3.5" /> Open in Canva</Button>
+        </div>
+        {isError && (
+          <Button size="sm" className="w-full" onClick={generate}>
+            <RefreshCw className="h-3.5 w-3.5" /> Retry generation
+          </Button>
+        )}
+      </div>
+    );
+  }
+}
+
+function GoldSpinner({ small }: { small?: boolean }) {
+  const s = small ? "h-4 w-4" : "h-12 w-12";
+  return (
+    <span className={cn("relative inline-block", s)}>
+      <span className={cn("absolute inset-0 rounded-full border-2 border-gold/20")} />
+      <span className={cn("absolute inset-0 animate-spin rounded-full border-2 border-transparent border-t-gold")} />
+    </span>
   );
 }
 
@@ -407,11 +485,7 @@ function Out({ label, value }: { label: string; value: string }) {
 
 function IconBtn({ children, onClick, title, danger }: { children: React.ReactNode; onClick: () => void; title: string; danger?: boolean }) {
   return (
-    <button
-      onClick={onClick}
-      title={title}
-      className={cn("rounded p-1 text-muted-foreground transition-colors", danger ? "hover:text-destructive" : "hover:text-gold")}
-    >
+    <button onClick={onClick} title={title} className={cn("rounded p-1 text-muted-foreground transition-colors", danger ? "hover:text-destructive" : "hover:text-gold")}>
       {children}
     </button>
   );
