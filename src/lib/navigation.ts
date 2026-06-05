@@ -207,7 +207,7 @@ export const NAV_SECTIONS: NavSection[] = [
         label: "Motion Graphics Studio",
         href: "/motion-graphics",
         icon: Clapperboard,
-        description: "Reel motion templates, b-roll and animation prompts.",
+        description: "Creative Asset Generation Engine — OpenAI / Firefly / Canva, knowledge-grounded.",
       },
       {
         label: "Creative Center",
