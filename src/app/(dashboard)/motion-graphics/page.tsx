@@ -18,12 +18,14 @@ import {
   Save,
   AlertTriangle,
   Bot,
+  Star,
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { PageHeader } from "@/components/shared/page-header";
 import { Button } from "@/components/ui/button";
-import { useCollection, type Row } from "@/lib/db/use-collection";
+import { useCollection, collectionUpsert, type Row } from "@/lib/db/use-collection";
+import { rowToRecord } from "@/lib/db/case";
 import {
   ASSET_TYPES,
   BRAND_STYLES,
@@ -101,9 +103,13 @@ export default function CreativeStudio() {
       provider: res.provider,
       width: res.width,
       height: res.height,
-      fileSize: res.fileSize,
       error: res.error,
     });
+    // The Edge Function already inserted the row into creative_assets; mirror it
+    // into the local store so it shows in the Asset Library immediately.
+    if (res.status === "generated" && res.row) {
+      collectionUpsert("creative_assets", rowToRecord(res.row as Record<string, unknown>) as Row, ASSET_SEED);
+    }
   }
 
   function saveToLibrary() {
@@ -130,19 +136,19 @@ export default function CreativeStudio() {
 
   async function regenerate(r: Row) {
     const input: CreativeInput = {
-      projectName: String(r.projectName ?? ""),
+      projectName: String(r.title ?? r.projectName ?? ""),
       assetType: String(r.assetType ?? "Advertisement"),
-      topic: String(r.topic ?? ""),
+      topic: String(r.topic ?? r.title ?? ""),
       industry: String(r.industry ?? ""),
       offer: String(r.offer ?? ""),
       platform: String(r.platform ?? ""),
       brandStyle: String(r.brandStyle ?? "Luxury Black & Gold"),
-      provider: (String(r.provider ?? "OpenAI") as ProviderId) || "OpenAI",
+      provider: (String(r.provider ?? "openai").toLowerCase() === "firefly" ? "Adobe Firefly" : "OpenAI") as ProviderId,
     };
     const direction = buildDirection(input);
     const out = await generateAsset(input, direction);
-    if (out.status === "generated" && out.assetUrl) {
-      update(r.id, { assetUrl: out.assetUrl, thumbnailUrl: out.assetUrl, prompt: direction.prompts.openai, createdAt: new Date().toISOString() });
+    if (out.status === "generated" && out.row) {
+      collectionUpsert("creative_assets", rowToRecord(out.row as Record<string, unknown>) as Row, ASSET_SEED);
     }
   }
 
@@ -343,15 +349,15 @@ export default function CreativeStudio() {
             {filtered.map((r) => (
               <div key={r.id} className="group overflow-hidden rounded-xl border border-border bg-card">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={String(r.assetUrl)} alt={String(r.projectName)} className="aspect-square w-full object-cover" />
+                <img src={assetSrc(r)} alt={assetTitle(r)} className="aspect-square w-full object-cover" />
                 <div className="p-2.5">
-                  <p className="truncate text-[12px] font-medium">{String(r.projectName)}</p>
-                  <p className="truncate text-[10px] text-muted-foreground">{String(r.assetType)} · {String(r.provider)}</p>
+                  <p className="truncate text-[12px] font-medium">{assetTitle(r)}</p>
+                  <p className="truncate text-[10px] text-muted-foreground">{String(r.assetType ?? "")} · {String(r.provider ?? "")}</p>
                   <div className="mt-2 flex items-center gap-1">
-                    <IconBtn title="Download" onClick={() => download(String(r.assetUrl), String(r.projectName))}><Download className="h-3.5 w-3.5" /></IconBtn>
-                    <IconBtn title="Copy URL" onClick={() => { copy(String(r.assetUrl)); ping(`u-${r.id}`); }}>{flash === `u-${r.id}` ? <Check className="h-3.5 w-3.5 text-success" /> : <Link2 className="h-3.5 w-3.5" />}</IconBtn>
-                    <IconBtn title="Copy prompt" onClick={() => { copy(String(r.prompt)); ping(`c-${r.id}`); }}>{flash === `c-${r.id}` ? <Check className="h-3.5 w-3.5 text-success" /> : <Copy className="h-3.5 w-3.5" />}</IconBtn>
-                    <IconBtn title="Duplicate" onClick={() => { const { id: _i, ...rest } = r; add(rest as Omit<Row, "id">); }}><CopyPlus className="h-3.5 w-3.5" /></IconBtn>
+                    <IconBtn title="Favorite" onClick={() => update(r.id, { favorite: !r.favorite })}><Star className={cn("h-3.5 w-3.5", Boolean(r.favorite) && "fill-gold text-gold")} /></IconBtn>
+                    <IconBtn title="Download" onClick={() => download(assetSrc(r), assetTitle(r))}><Download className="h-3.5 w-3.5" /></IconBtn>
+                    <IconBtn title="Copy URL" onClick={() => { copy(assetSrc(r)); ping(`u-${r.id}`); }}>{flash === `u-${r.id}` ? <Check className="h-3.5 w-3.5 text-success" /> : <Link2 className="h-3.5 w-3.5" />}</IconBtn>
+                    <IconBtn title="Copy prompt" onClick={() => { copy(String(r.prompt ?? "")); ping(`c-${r.id}`); }}>{flash === `c-${r.id}` ? <Check className="h-3.5 w-3.5 text-success" /> : <Copy className="h-3.5 w-3.5" />}</IconBtn>
                     <IconBtn title="Regenerate" onClick={() => regenerate(r)}><RefreshCw className="h-3.5 w-3.5" /></IconBtn>
                     <IconBtn title="Delete" danger onClick={() => remove(r.id)}><Trash2 className="h-3.5 w-3.5" /></IconBtn>
                   </div>
@@ -401,9 +407,9 @@ export default function CreativeStudio() {
             <Button size="sm" variant="outline" onClick={generate}>
               <RefreshCw className="h-3.5 w-3.5" /> Regenerate
             </Button>
-            <Button size="sm" onClick={saveToLibrary}>
-              {flash === "saved" ? <Check className="h-3.5 w-3.5" /> : <Save className="h-3.5 w-3.5" />} Save to Library
-            </Button>
+            <span className="inline-flex items-center justify-center gap-1.5 rounded-md border border-success/30 bg-success/10 text-[12px] font-semibold text-success">
+              <Check className="h-3.5 w-3.5" /> Saved to Library
+            </span>
           </div>
         </div>
       );
@@ -433,8 +439,8 @@ export default function CreativeStudio() {
           <AlertTriangle className={cn("mt-0.5 h-4 w-4 shrink-0", isError ? "text-destructive" : "text-gold")} />
           <span className="text-muted-foreground">
             {isError
-              ? `Generation failed: ${gen.error}. The prompt is ready — generate manually below.`
-              : `${gen.provider} API key missing. Prompt generated, but in-app image generation is disabled. Set NEXT_PUBLIC_OPENAI_API_KEY (or the Firefly server keys) to render here — then use the buttons below in the meantime.`}
+              ? `Generation failed: ${gen.error}. The prompt is ready — retry below or use the launch buttons.`
+              : `Supabase isn't connected, so the secure generate-image function can't be reached. Add NEXT_PUBLIC_SUPABASE_URL + NEXT_PUBLIC_SUPABASE_ANON_KEY and deploy the generate-image Edge Function (with the OPENAI_API_KEY secret). The prompt is ready — use the buttons below meanwhile.`}
           </span>
         </div>
         <div className="grid grid-cols-2 gap-2">
@@ -489,4 +495,13 @@ function IconBtn({ children, onClick, title, danger }: { children: React.ReactNo
       {children}
     </button>
   );
+}
+
+// Library records come from the Edge Function row (camelCased): imageUrl/title.
+// Fall back to any older local fields for resilience.
+function assetSrc(r: Row) {
+  return String(r.imageUrl ?? r.assetUrl ?? "");
+}
+function assetTitle(r: Row) {
+  return String(r.title ?? r.projectName ?? r.topic ?? "Asset");
 }
