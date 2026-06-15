@@ -7,7 +7,24 @@ import { retrieve } from "@/lib/vault/engine";
  * The actual pixels are produced by `providers.ts` (OpenAI / Firefly).
  */
 
-export type ProviderId = "OpenAI" | "Adobe Firefly" | "Canva";
+export type ProviderId = "Flux" | "Adobe Firefly" | "OpenAI" | "Canva";
+
+/** UI provider list — modular & future-ready. Flux is the default renderer;
+ *  Firefly/OpenAI plug in later with no refactor; Canva is design-brief only. */
+export const PROVIDERS: { id: ProviderId; label: string; note: string }[] = [
+  { id: "Flux", label: "Flux", note: "Default renderer" },
+  { id: "Adobe Firefly", label: "Firefly", note: "Coming soon" },
+  { id: "OpenAI", label: "OpenAI", note: "Backup" },
+  { id: "Canva", label: "Canva", note: "Design brief" },
+];
+
+/** Maps the UI provider to the Edge Function provider id. */
+export const FN_PROVIDER: Record<ProviderId, string> = {
+  Flux: "flux",
+  "Adobe Firefly": "firefly",
+  OpenAI: "openai",
+  Canva: "canva",
+};
 
 export interface AssetType {
   id: string;

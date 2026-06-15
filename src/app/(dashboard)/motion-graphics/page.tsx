@@ -31,6 +31,7 @@ import {
   BRAND_STYLES,
   INDUSTRIES,
   PLATFORMS,
+  PROVIDERS,
   buildDirection,
   type CreativeDirection,
   type CreativeInput,
@@ -41,7 +42,6 @@ import { isSupabaseConfigured } from "@/lib/supabase/client";
 
 const COLLECTION = "creative_assets";
 const ASSET_SEED: Row[] = [];
-const PROVIDERS: ProviderId[] = ["OpenAI", "Adobe Firefly", "Canva"];
 const inputCls =
   "w-full rounded-md border border-border bg-background px-2.5 py-2 text-sm text-foreground outline-none focus:border-gold/50";
 
@@ -53,7 +53,7 @@ const DEFAULTS: CreativeInput = {
   offer: "",
   platform: "Instagram",
   brandStyle: "Luxury Black & Gold",
-  provider: "OpenAI",
+  provider: "Flux",
 };
 
 const copy = (t: string) => {
@@ -177,7 +177,7 @@ export default function CreativeStudio() {
       <PageHeader
         icon={<Clapperboard className="h-5 w-5" />}
         title="Creative Asset Generation Engine"
-        description="The creative department of Triad T — turn a brief into knowledge-grounded creative direction and a real generated image via OpenAI / Adobe Firefly, organized into projects."
+        description="The creative department of Triad T — Claude writes the master prompt, Flux renders the image, Supabase stores it. Firefly & OpenAI are pluggable providers."
         actions={
           <span
             className={cn(
@@ -235,17 +235,19 @@ export default function CreativeStudio() {
               </select>
             </F>
             <F label="Generation Provider">
-              <div className="grid grid-cols-3 gap-1.5">
+              <div className="grid grid-cols-2 gap-1.5">
                 {PROVIDERS.map((p) => (
                   <button
-                    key={p}
-                    onClick={() => set("provider", p)}
+                    key={p.id}
+                    onClick={() => set("provider", p.id)}
+                    title={p.note}
                     className={cn(
-                      "rounded-md border px-2 py-1.5 text-[11px] font-semibold transition-colors",
-                      form.provider === p ? "border-gold/40 bg-gold/10 text-gold" : "border-border text-muted-foreground hover:text-foreground",
+                      "flex flex-col items-start rounded-md border px-2 py-1.5 text-[11px] font-semibold transition-colors",
+                      form.provider === p.id ? "border-gold/40 bg-gold/10 text-gold" : "border-border text-muted-foreground hover:text-foreground",
                     )}
                   >
-                    {p.replace("Adobe ", "")}
+                    {p.label}
+                    <span className="text-[9px] font-normal text-muted-foreground">{p.note}</span>
                   </button>
                 ))}
               </div>
@@ -440,7 +442,7 @@ export default function CreativeStudio() {
           <span className="text-muted-foreground">
             {isError
               ? `Generation failed: ${gen.error}. The prompt is ready — retry below or use the launch buttons.`
-              : `Supabase isn't connected, so the secure generate-image function can't be reached. Add NEXT_PUBLIC_SUPABASE_URL + NEXT_PUBLIC_SUPABASE_ANON_KEY and deploy the generate-image Edge Function (with the OPENAI_API_KEY secret). The prompt is ready — use the buttons below meanwhile.`}
+              : `Supabase isn't connected, so the secure generate-image function can't be reached. Add NEXT_PUBLIC_SUPABASE_URL + NEXT_PUBLIC_SUPABASE_ANON_KEY and deploy the generate-image Edge Function (secrets: FLUX_API_KEY + ANTHROPIC_API_KEY). The prompt is ready — use the buttons below meanwhile.`}
           </span>
         </div>
         <div className="grid grid-cols-2 gap-2">
