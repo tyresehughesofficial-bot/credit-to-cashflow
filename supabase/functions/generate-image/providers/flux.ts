@@ -1,51 +1,57 @@
-// Flux renderer — Black Forest Labs API (DEFAULT provider).
-// Secret: FLUX_API_KEY   (optional overrides: FLUX_API_BASE, FLUX_MODEL)
-// Flow: submit job → poll until Ready → fetch the sample image → return bytes.
+// Flux renderer — fal.ai (DEFAULT provider).
+// Secret: FAL_KEY  (FLUX_API_KEY also accepted)   Override model: FAL_MODEL / FLUX_MODEL
+// fal.ai is synchronous: POST the model endpoint → JSON { images: [{ url }] } →
+// fetch the image → return bytes.
 
 import { dims, type Renderer } from "./types.ts";
 
-const BASE = Deno.env.get("FLUX_API_BASE") ?? "https://api.bfl.ml";
-const MODEL = Deno.env.get("FLUX_MODEL") ?? "flux-pro-1.1";
+const BASE = Deno.env.get("FAL_API_BASE") ?? "https://fal.run";
+const MODEL = Deno.env.get("FAL_MODEL") ?? Deno.env.get("FLUX_MODEL") ?? "fal-ai/flux/dev";
 
-// Flux requires dimensions that are multiples of 32, within [256, 1440].
-function clamp32(n: number): number {
+const falKey = () => Deno.env.get("FAL_KEY") ?? Deno.env.get("FLUX_API_KEY");
+
+// fal flux accepts a custom { width, height } image_size (256–1440, mult. of 16 is safe).
+function clamp(n: number): number {
   const c = Math.max(256, Math.min(1440, n || 1024));
-  return Math.round(c / 32) * 32;
+  return Math.round(c / 16) * 16;
 }
 
 export const flux: Renderer = {
   id: "flux",
-  status: () => (Deno.env.get("FLUX_API_KEY") ? "available" : "unavailable"),
+  status: () => (falKey() ? "available" : "unavailable"),
   async render(prompt, { size }) {
-    const key = Deno.env.get("FLUX_API_KEY");
-    if (!key) throw new Error("FLUX_API_KEY secret is not set on the function.");
+    const key = falKey();
+    if (!key) throw new Error("FAL_KEY secret is not set on the function.");
     const [w, h] = dims(size);
 
-    const submit = await fetch(`${BASE}/v1/${MODEL}`, {
+    const res = await fetch(`${BASE}/${MODEL}`, {
       method: "POST",
-      headers: { "Content-Type": "application/json", accept: "application/json", "x-key": key },
-      body: JSON.stringify({ prompt, width: clamp32(w), height: clamp32(h), output_format: "png" }),
+      headers: { "Content-Type": "application/json", Authorization: `Key ${key}` },
+      body: JSON.stringify({
+        prompt,
+        image_size: { width: clamp(w), height: clamp(h) },
+        num_images: 1,
+        output_format: "png",
+        enable_safety_checker: true,
+      }),
     });
-    const sj = await submit.json();
-    if (!submit.ok) throw new Error(sj?.error ?? `Flux submit error ${submit.status}`);
-    const pollUrl: string = sj.polling_url ?? `${BASE}/v1/get_result?id=${sj.id}`;
 
-    for (let i = 0; i < 45; i++) {
-      await new Promise((r) => setTimeout(r, 1500));
-      const pr = await fetch(pollUrl, { headers: { accept: "application/json", "x-key": key } });
-      const pj = await pr.json();
-      const status = pj?.status;
-      if (status === "Ready") {
-        const url = pj?.result?.sample;
-        if (!url) throw new Error("Flux: result had no sample URL.");
-        const img = await fetch(url);
-        if (!img.ok) throw new Error(`Flux: failed to fetch sample (${img.status}).`);
-        return new Uint8Array(await img.arrayBuffer());
-      }
-      if (status === "Error" || status === "Failed" || status === "Content Moderated") {
-        throw new Error(`Flux returned status "${status}".`);
-      }
+    const json = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      const msg = json?.detail?.[0]?.msg ?? json?.detail ?? json?.error ?? `fal.ai error ${res.status}`;
+      throw new Error(typeof msg === "string" ? msg : JSON.stringify(msg));
     }
-    throw new Error("Flux generation timed out.");
+
+    const url = json?.images?.[0]?.url;
+    if (!url) throw new Error("fal.ai returned no image URL.");
+
+    // fal can return a data: URL or an https URL — handle both.
+    if (url.startsWith("data:")) {
+      const b64 = url.split(",")[1] ?? "";
+      return Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
+    }
+    const img = await fetch(url);
+    if (!img.ok) throw new Error(`fal.ai: failed to fetch image (${img.status}).`);
+    return new Uint8Array(await img.arrayBuffer());
   },
 };

@@ -442,7 +442,7 @@ export default function CreativeStudio() {
           <span className="text-muted-foreground">
             {isError
               ? `Generation failed: ${gen.error}. The prompt is ready — retry below or use the launch buttons.`
-              : `Supabase isn't connected, so the secure generate-image function can't be reached. Add NEXT_PUBLIC_SUPABASE_URL + NEXT_PUBLIC_SUPABASE_ANON_KEY and deploy the generate-image Edge Function (secrets: FLUX_API_KEY + ANTHROPIC_API_KEY). The prompt is ready — use the buttons below meanwhile.`}
+              : `Supabase isn't connected, so the secure generate-image function can't be reached. Add NEXT_PUBLIC_SUPABASE_URL + NEXT_PUBLIC_SUPABASE_ANON_KEY and deploy the generate-image Edge Function (secrets: FAL_KEY + ANTHROPIC_API_KEY). The prompt is ready — use the buttons below meanwhile.`}
           </span>
         </div>
         <div className="grid grid-cols-2 gap-2">
