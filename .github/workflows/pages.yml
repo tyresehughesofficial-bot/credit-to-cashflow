@@ -33,6 +33,17 @@ jobs:
           NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
       - run: touch out/.nojekyll
+      - name: Add 404 → Command Center fallback
+        run: |
+          cat > out/404.html <<'HTML'
+          <!doctype html><html lang="en"><head><meta charset="utf-8">
+          <meta http-equiv="refresh" content="0; url=/credit-to-cashflow/command-center/">
+          <link rel="canonical" href="/credit-to-cashflow/command-center/">
+          <title>TRIAD T — Command Center</title></head>
+          <body style="background:#0b0a08;color:#D4AF37;font-family:system-ui;text-align:center;padding:3rem">
+          Redirecting to the Command Center… <a style="color:#E6C65A" href="/credit-to-cashflow/command-center/">Open it</a>.
+          </body></html>
+          HTML
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
