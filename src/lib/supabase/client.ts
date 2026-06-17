@@ -12,9 +12,12 @@ import { createBrowserClient } from "@supabase/ssr";
  * key is absent so the app stays in local-only mode.
  */
 const DEFAULT_URL = "https://ttbcxfgopvvjkqmquqfh.supabase.co";
+// Publishable (anon) key — safe to expose: it's sent by every browser and the
+// data is protected by RLS. Overridable via NEXT_PUBLIC_SUPABASE_ANON_KEY.
+const DEFAULT_ANON_KEY = "sb_publishable_j4YRaaLd3IfXHvu3hLAPpQ_NEImZXgV";
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || DEFAULT_URL;
-const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
+const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || DEFAULT_ANON_KEY;
 
 export function createClient() {
   if (!SUPABASE_URL || !SUPABASE_ANON_KEY) return null;
