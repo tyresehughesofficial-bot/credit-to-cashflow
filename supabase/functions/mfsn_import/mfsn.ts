@@ -63,7 +63,9 @@ export interface MfsnClient {
 // Override any of these via Edge Function secrets without code changes:
 //   supabase secrets set MFSN_BASE_URL=...  MFSN_AUTH_HEADER=Authorization
 //   supabase secrets set MFSN_AUTH_PREFIX="Bearer "  (use "" for raw key / X-API-Key)
-const ENV = (k: string, d = "") => Deno.env.get(k) ?? d;
+// Secret names are matched case-insensitively (MFSN_API_KEY or mfsn_api_key).
+const ENV = (k: string, d = "") =>
+  Deno.env.get(k) ?? Deno.env.get(k.toUpperCase()) ?? Deno.env.get(k.toLowerCase()) ?? d;
 
 export const MFSN = {
   apiKey: ENV("MFSN_API_KEY"),
