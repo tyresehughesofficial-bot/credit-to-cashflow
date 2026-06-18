@@ -45,6 +45,8 @@ export type NegativeType =
 
 export type PriorityLevel = "Low" | "Medium" | "High" | "Critical";
 
+export type ClientSource = "myfreescorenow" | "disputefox" | "manual";
+
 /** clients */
 export interface Client {
   id: string;
@@ -56,6 +58,10 @@ export interface Client {
   status: ClientStatus;
   round: number;
   myfreescorenowId?: string;
+  source?: ClientSource;
+  externalId?: string;
+  enrollmentStatus?: string;
+  dateAdded?: string;
 }
 
 /** credit_reports */
@@ -113,6 +119,42 @@ export interface AiDiagnosis {
   recommendations: string;
   priorityLevel: PriorityLevel | string;
   healthBand: HealthBand;
+  createdAt?: string;
+}
+
+/** credit_utilization */
+export interface CreditUtilization {
+  id: string;
+  clientId: string;
+  reportId?: string;
+  totalLimit: number;
+  totalBalance: number;
+  utilizationPct: number;
+  createdAt?: string;
+}
+
+/** public_records */
+export interface PublicRecord {
+  id: string;
+  clientId: string;
+  bureau: string;
+  recordType: string; // bankruptcy | judgment | lien
+  status?: string;
+  amount: number;
+  filedDate?: string;
+  reference?: string;
+  remarks?: string;
+  createdAt?: string;
+}
+
+/** personal_information */
+export interface PersonalInformation {
+  id: string;
+  clientId: string;
+  infoType: string; // name | address | employer | phone
+  value: string;
+  bureau?: string;
+  status?: string; // current | old | unauthorized
   createdAt?: string;
 }
 

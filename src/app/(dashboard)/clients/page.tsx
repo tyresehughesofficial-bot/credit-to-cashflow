@@ -13,6 +13,9 @@ import {
   X,
   Loader2,
   Download,
+  Landmark,
+  CheckCircle2,
+  XCircle,
 } from "lucide-react";
 
 import { PageHeader } from "@/components/shared/page-header";
@@ -37,17 +40,22 @@ import {
   NEGATIVE_SEED,
   INQUIRY_SEED,
   ROUND_SEED,
+  UTILIZATION_SEED,
+  PUBLIC_RECORD_SEED,
+  PERSONAL_INFO_SEED,
 } from "@/lib/credit/data";
 import {
   type Client,
   type CreditReport,
+  type CreditUtilization,
   type NegativeAccount,
   type Inquiry,
   type DisputeRound,
+  type PublicRecord,
+  type PersonalInformation,
   type ClientStatus,
   type RoundStatus,
   CLIENT_STATUSES,
-  BUREAUS,
   fullName,
 } from "@/lib/credit/types";
 import {
@@ -55,9 +63,9 @@ import {
   actionPlan,
   disputeStrategy,
   recommendations,
-  type DiagnosisResult,
+  fundingReadiness,
 } from "@/lib/credit/engine";
-import { importClient } from "@/lib/credit/myfreescorenow";
+import { importClient, type ImportResult } from "@/lib/credit/myfreescorenow";
 
 const inputCls =
   "w-full rounded-md border border-border bg-background px-2.5 py-2 text-sm text-foreground outline-none focus:border-gold/50";
@@ -95,11 +103,15 @@ export default function ClientCommandCenter() {
   const negatives = useCollection<NegativeAccount & Row>("negative_accounts", NEGATIVE_SEED as (NegativeAccount & Row)[]);
   const inquiries = useCollection<Inquiry & Row>("inquiries", INQUIRY_SEED as (Inquiry & Row)[]);
   const rounds = useCollection<DisputeRound & Row>("dispute_rounds", ROUND_SEED as (DisputeRound & Row)[]);
+  const utilization = useCollection<CreditUtilization & Row>("credit_utilization", UTILIZATION_SEED as (CreditUtilization & Row)[]);
+  const publicRecords = useCollection<PublicRecord & Row>("public_records", PUBLIC_RECORD_SEED as (PublicRecord & Row)[]);
+  const personalInfo = useCollection<PersonalInformation & Row>("personal_information", PERSONAL_INFO_SEED as (PersonalInformation & Row)[]);
 
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [selectedId, setSelectedId] = useState<string | null>(CLIENT_SEED[0]?.id ?? null);
   const [importing, setImporting] = useState(false);
+  const [lastImport, setLastImport] = useState<ImportResult | null>(null);
 
   const filtered = useMemo(() => {
     const q = query.toLowerCase();
@@ -205,6 +217,9 @@ export default function ClientCommandCenter() {
             negatives={negatives.records.filter((n) => n.clientId === selected.id)}
             inquiries={inquiries.records.filter((q) => q.clientId === selected.id)}
             rounds={rounds.records.filter((r) => r.clientId === selected.id)}
+            utilization={utilization.records.find((u) => u.clientId === selected.id)}
+            publicRecords={publicRecords.records.filter((p) => p.clientId === selected.id)}
+            personalInfo={personalInfo.records.filter((p) => p.clientId === selected.id)}
             onAddRound={(r) => rounds.add(r)}
             onUpdateClient={(patch) => clients.update(selected.id, patch)}
           />
@@ -217,14 +232,41 @@ export default function ClientCommandCenter() {
 
       {importing && (
         <ImportDialog
-          busy={false}
           onClose={() => setImporting(false)}
           onImport={async (form) => {
             const res = await importClient(form);
-            setSelectedId(res.client.id);
+            setSelectedId(res.clientId);
+            setLastImport(res);
             setImporting(false);
           }}
         />
+      )}
+
+      {lastImport && (
+        <div className="fixed bottom-4 right-4 z-50 max-w-sm rounded-xl border border-gold/30 bg-card p-4 shadow-gold">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <p className="text-sm font-semibold">
+                Imported from MyFreeScoreNow{" "}
+                <Badge variant={lastImport.mode === "live" ? "success" : "secondary"} className="ml-1 align-middle">
+                  {lastImport.mode}
+                </Badge>
+              </p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                {lastImport.counts.negatives} negatives · {lastImport.counts.inquiries} inquiries ·{" "}
+                {lastImport.counts.publicRecords} public records · {lastImport.counts.personalInfo} PII items
+              </p>
+              {lastImport.mode === "demo" && (
+                <p className="mt-1 text-[11px] text-muted-foreground">
+                  Demo data — set <span className="text-gold">MFSN_API_KEY</span> to pull live reports.
+                </p>
+              )}
+            </div>
+            <button onClick={() => setLastImport(null)} className="text-muted-foreground hover:text-foreground">
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
       )}
     </div>
   );
@@ -238,6 +280,9 @@ function ClientDetail({
   negatives,
   inquiries,
   rounds,
+  utilization,
+  publicRecords,
+  personalInfo,
   onAddRound,
   onUpdateClient,
 }: {
@@ -246,6 +291,9 @@ function ClientDetail({
   negatives: NegativeAccount[];
   inquiries: Inquiry[];
   rounds: DisputeRound[];
+  utilization?: CreditUtilization;
+  publicRecords: PublicRecord[];
+  personalInfo: PersonalInformation[];
   onAddRound: (r: Omit<DisputeRound, "id">) => void;
   onUpdateClient: (patch: Partial<Client>) => void;
 }) {
@@ -259,6 +307,14 @@ function ClientDetail({
     { bureau: "Equifax", score: report?.equifaxScore },
     { bureau: "TransUnion", score: report?.transunionScore },
   ];
+  const avg = useMemo(() => {
+    const xs = scores.map((s) => s.score).filter((n): n is number => !!n);
+    return xs.length ? Math.round(xs.reduce((a, b) => a + b, 0) / xs.length) : 0;
+  }, [scores]);
+  const funding = useMemo(
+    () => fundingReadiness(avg, utilization?.utilizationPct, inquiries.length, negatives),
+    [avg, utilization, inquiries, negatives],
+  );
 
   return (
     <div className="rounded-xl border border-border bg-card p-5">
@@ -269,10 +325,17 @@ function ClientDetail({
             <AvatarFallback>{initials(fullName(client))}</AvatarFallback>
           </Avatar>
           <div>
-            <h2 className="text-lg font-bold">{fullName(client)}</h2>
+            <div className="flex items-center gap-2">
+              <h2 className="text-lg font-bold">{fullName(client)}</h2>
+              {client.source && (
+                <Badge variant="outline" className="text-[10px] capitalize">
+                  {client.source === "myfreescorenow" ? "MyFreeScoreNow" : client.source}
+                </Badge>
+              )}
+            </div>
             <p className="text-xs text-muted-foreground">
               {client.phone || "—"} · {client.email || "—"}
-              {client.myfreescorenowId && <> · MFSN {client.myfreescorenowId}</>}
+              {client.myfreescorenowId && <> · ID {client.myfreescorenowId}</>}
             </p>
           </div>
         </div>
@@ -304,6 +367,37 @@ function ClientDetail({
         </div>
       </div>
 
+      {/* utilization + funding row */}
+      <div className="mb-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <div className="rounded-lg border border-border bg-background/40 p-3 text-center">
+          <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Utilization</p>
+          <p className={cn("mt-1 text-xl font-extrabold", (utilization?.utilizationPct ?? 0) > 30 ? "text-destructive" : "text-success")}>
+            {utilization ? `${utilization.utilizationPct}%` : "—"}
+          </p>
+        </div>
+        <div className="rounded-lg border border-border bg-background/40 p-3 text-center">
+          <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Negatives</p>
+          <p className="mt-1 text-xl font-extrabold">{negatives.filter((n) => n.status !== "deleted").length}</p>
+        </div>
+        <div className="rounded-lg border border-border bg-background/40 p-3 text-center">
+          <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Inquiries</p>
+          <p className="mt-1 text-xl font-extrabold">{inquiries.length}</p>
+        </div>
+        <div
+          className={cn(
+            "rounded-lg border p-3 text-center",
+            funding.band === "Funding Ready"
+              ? "border-success/40 bg-success/5"
+              : funding.band === "Almost Ready"
+                ? "border-warning/40 bg-warning/5"
+                : "border-border bg-background/40",
+          )}
+        >
+          <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Funding</p>
+          <p className="mt-1 text-sm font-bold">{funding.band}</p>
+        </div>
+      </div>
+
       <Tabs defaultValue="diagnosis">
         <TabsList className="flex-wrap">
           <TabsTrigger value="diagnosis">
@@ -317,6 +411,9 @@ function ClientDetail({
           </TabsTrigger>
           <TabsTrigger value="strategy">
             <Gavel className="mr-1.5 h-3.5 w-3.5" /> Strategy
+          </TabsTrigger>
+          <TabsTrigger value="funding">
+            <Landmark className="mr-1.5 h-3.5 w-3.5" /> Funding
           </TabsTrigger>
           <TabsTrigger value="rounds">Rounds</TabsTrigger>
         </TabsList>
@@ -402,6 +499,66 @@ function ClientDetail({
               ))}
             </div>
           </div>
+
+          {utilization && (
+            <div>
+              <p className="mb-2 text-sm font-semibold">Utilization</p>
+              <div className="rounded-lg border border-border/60 bg-background/40 px-3 py-2.5">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">
+                    ${Number(utilization.totalBalance).toLocaleString()} / ${Number(utilization.totalLimit).toLocaleString()}
+                  </span>
+                  <span className={cn("font-semibold", utilization.utilizationPct > 30 ? "text-destructive" : "text-success")}>
+                    {utilization.utilizationPct}%
+                  </span>
+                </div>
+                <Progress value={Math.min(100, utilization.utilizationPct)} className="mt-2" />
+              </div>
+            </div>
+          )}
+
+          <div>
+            <p className="mb-2 text-sm font-semibold">Public Records ({publicRecords.length})</p>
+            <div className="space-y-2">
+              {publicRecords.length === 0 && <p className="text-xs text-muted-foreground">None.</p>}
+              {publicRecords.map((p) => (
+                <div key={p.id} className="rounded-lg border border-border/60 bg-background/40 px-3 py-2">
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="text-sm font-medium capitalize">{p.recordType}</p>
+                    <Badge variant="warning" className="capitalize">
+                      {p.status || "open"}
+                    </Badge>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    {p.bureau} · ${Number(p.amount).toLocaleString()} · filed {p.filedDate ?? "—"}
+                    {p.reference && <> · {p.reference}</>}
+                  </p>
+                  {p.remarks && <p className="mt-1 text-xs text-foreground/70">{p.remarks}</p>}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <p className="mb-2 text-sm font-semibold">Personal Information ({personalInfo.length})</p>
+            <div className="space-y-2">
+              {personalInfo.length === 0 && <p className="text-xs text-muted-foreground">None.</p>}
+              {personalInfo.map((pi) => (
+                <div key={pi.id} className="flex items-center justify-between rounded-lg border border-border/60 bg-background/40 px-3 py-2">
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-medium">{pi.value}</p>
+                    <p className="text-xs text-muted-foreground capitalize">
+                      {pi.infoType}
+                      {pi.bureau && <> · {pi.bureau}</>}
+                    </p>
+                  </div>
+                  <Badge variant={pi.status === "unauthorized" || pi.status === "old" ? "warning" : "muted"} className="capitalize">
+                    {pi.status}
+                  </Badge>
+                </div>
+              ))}
+            </div>
+          </div>
         </TabsContent>
 
         {/* ACTION PLAN */}
@@ -447,6 +604,50 @@ function ClientDetail({
               </div>
             </div>
           ))}
+        </TabsContent>
+
+        {/* FUNDING READINESS */}
+        <TabsContent value="funding" className="space-y-4">
+          <div
+            className={cn(
+              "rounded-lg border p-4",
+              funding.band === "Funding Ready"
+                ? "border-success/40 bg-success/5"
+                : funding.band === "Almost Ready"
+                  ? "border-warning/40 bg-warning/5"
+                  : "border-destructive/40 bg-destructive/5",
+            )}
+          >
+            <div className="flex items-center justify-between">
+              <p className="text-sm font-semibold">Funding Readiness</p>
+              <Badge
+                variant={funding.band === "Funding Ready" ? "success" : funding.band === "Almost Ready" ? "warning" : "destructive"}
+              >
+                {funding.band}
+              </Badge>
+            </div>
+            <Progress value={funding.score} className="mt-3" />
+            <p className="mt-1 text-right text-xs text-muted-foreground">{funding.score}% of approval factors met</p>
+          </div>
+          <div className="space-y-2">
+            {funding.factors.map((f) => (
+              <div key={f.label} className="flex items-center justify-between rounded-lg border border-border/60 bg-background/40 px-3 py-2">
+                <div className="flex items-center gap-2">
+                  {f.ok ? (
+                    <CheckCircle2 className="h-4 w-4 text-success" />
+                  ) : (
+                    <XCircle className="h-4 w-4 text-destructive" />
+                  )}
+                  <span className="text-sm font-medium">{f.label}</span>
+                </div>
+                <span className="text-xs text-muted-foreground">{f.detail}</span>
+              </div>
+            ))}
+          </div>
+          <div className="rounded-lg border border-gold/20 bg-gold/5 p-3">
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-gold">Recommended Path</p>
+            <p className="mt-1 text-sm">{funding.recommendedPath}</p>
+          </div>
         </TabsContent>
 
         {/* ROUNDS */}
@@ -521,7 +722,6 @@ function ImportDialog({
   onClose,
   onImport,
 }: {
-  busy: boolean;
   onClose: () => void;
   onImport: (form: { firstName: string; lastName: string; email?: string; phone?: string; myfreescorenowId?: string }) => Promise<void>;
 }) {

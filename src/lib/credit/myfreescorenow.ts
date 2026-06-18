@@ -1,52 +1,65 @@
 /**
- * MYFREESCORENOW INTEGRATION ARCHITECTURE.
+ * MYFREESCORENOW INTEGRATION (frontend seam).
  *
- * MyFreeScoreNow (MFSN) is the data source for the Client Command Center ONLY.
- * (Bureau Intelligence is internal knowledge and is NEVER connected to MFSN.)
+ * MyFreeScoreNow feeds the Client Command Center ONLY. The browser never holds
+ * the API token — it invokes the `mfsn-import` Supabase Edge Function, which
+ * reads MFSN_API_KEY server-side, pulls + normalizes the report, writes through
+ * to Supabase, and returns the normalized records. We then upsert those into the
+ * local collections so the UI updates instantly.
  *
- * Flow:
- *   MFSN  →  Import Client  →  Read Report  →  Analyze  →  Diagnose
- *         →  Generate Strategy  →  Generate Dispute Plan  →  Track Progress
+ * Multi-source by design (source = "myfreescorenow" | "disputefox" | "manual");
+ * only "myfreescorenow" is wired now.
  *
- * Security: MFSN credentials are an affiliate/partner API key that must live as
- * a Supabase Edge Function secret (MFSN_API_KEY), NEVER in NEXT_PUBLIC_* or the
- * client bundle. The browser calls a `mfsn-import` Edge Function which pulls the
- * member's tri-bureau report server-side and returns normalized JSON. Until that
- * function + secret are provisioned, `importClient()` falls back to a realistic
- * demo import so the operational workflow is fully functional.
+ * Flow: Command Center → mfsn-import → MFSN API → normalize → Supabase → UI.
  */
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/client";
-import { collectionUpsert } from "@/lib/db/use-collection";
+import { collectionUpsert, type Row } from "@/lib/db/use-collection";
 import type {
   Client,
   CreditReport,
+  CreditUtilization,
   Inquiry,
   NegativeAccount,
+  PersonalInformation,
+  PublicRecord,
 } from "./types";
 
 export interface ImportResult {
-  client: Client;
-  report: CreditReport;
-  negatives: NegativeAccount[];
-  inquiries: Inquiry[];
-  source: "live" | "demo";
+  clientId: string;
+  source: "myfreescorenow";
+  mode: "live" | "demo";
+  status: "success" | "partial" | "error";
+  counts: { negatives: number; inquiries: number; publicRecords: number; personalInfo: number };
+  errors?: string[];
 }
 
-const uid = (p: string) =>
-  `${p}-${typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID().slice(0, 8) : Math.random().toString(36).slice(2, 10)}`;
+const up = (table: string, rec: Record<string, unknown> & { id?: string }) =>
+  collectionUpsert(table, { id: rec.id ?? crypto.randomUUID(), ...rec } as Row);
 
-/** Persist an import into all relevant collections (local + Supabase write-through). */
-function persistImport(r: ImportResult) {
-  collectionUpsert("clients", r.client as unknown as Record<string, unknown> & { id: string });
-  collectionUpsert("credit_reports", r.report as unknown as Record<string, unknown> & { id: string });
-  r.negatives.forEach((n) => collectionUpsert("negative_accounts", n as unknown as Record<string, unknown> & { id: string }));
-  r.inquiries.forEach((q) => collectionUpsert("inquiries", q as unknown as Record<string, unknown> & { id: string }));
+/** Push the Edge Function's normalized payload into local collections (instant UI). */
+function persist(data: {
+  client: Client;
+  report: CreditReport;
+  utilization: CreditUtilization | null;
+  negatives: NegativeAccount[];
+  inquiries: Inquiry[];
+  publicRecords: PublicRecord[];
+  personalInfo: PersonalInformation[];
+}) {
+  up("clients", data.client as unknown as Row);
+  up("credit_reports", data.report as unknown as Row);
+  if (data.utilization) up("credit_utilization", data.utilization as unknown as Row);
+  data.negatives.forEach((n) => up("negative_accounts", n as unknown as Row));
+  data.inquiries.forEach((q) => up("inquiries", q as unknown as Row));
+  data.publicRecords.forEach((p) => up("public_records", p as unknown as Row));
+  data.personalInfo.forEach((pi) => up("personal_information", pi as unknown as Row));
 }
 
 /**
- * Import a client by MyFreeScoreNow member ID.
- * Live path: invoke the `mfsn-import` Edge Function (server holds MFSN_API_KEY).
- * Fallback: generate a realistic demo client so the workflow stays operational.
+ * Import a client from MyFreeScoreNow.
+ * Invokes the `mfsn-import` Edge Function (live when MFSN_API_KEY is set on the
+ * server, demo otherwise). Falls back to a local demo import if Supabase isn't
+ * configured at all, so the workflow is never blocked.
  */
 export async function importClient(input: {
   firstName: string;
@@ -55,88 +68,50 @@ export async function importClient(input: {
   phone?: string;
   myfreescorenowId?: string;
 }): Promise<ImportResult> {
-  const clientId = uid("cl");
-
-  // ── Live integration (when the Edge Function + secret are deployed) ──
-  if (isSupabaseConfigured && input.myfreescorenowId) {
+  if (isSupabaseConfigured) {
     const sb = createClient();
     if (sb) {
-      try {
-        const { data, error } = await sb.functions.invoke("mfsn-import", {
-          body: { memberId: input.myfreescorenowId },
-        });
-        if (!error && data?.report) {
-          const result = normalizeLive(clientId, input, data);
-          persistImport(result);
-          return result;
-        }
-      } catch {
-        /* fall through to demo */
+      const { data, error } = await sb.functions.invoke("mfsn-import", {
+        body: {
+          action: "import",
+          memberId: input.myfreescorenowId,
+          firstName: input.firstName,
+          lastName: input.lastName,
+          email: input.email,
+          phone: input.phone,
+        },
+      });
+      if (!error && data?.clientId && data?.data) {
+        persist(data.data);
+        return {
+          clientId: data.clientId,
+          source: "myfreescorenow",
+          mode: data.mode === "live" ? "live" : "demo",
+          status: data.status ?? "success",
+          counts: data.counts,
+          errors: data.errors,
+        };
       }
     }
   }
-
-  // ── Demo fallback (deterministic-ish but varied) ──
-  const result = demoImport(clientId, input);
-  persistImport(result);
-  return result;
+  // Local-only fallback (no backend configured).
+  return localDemo(input);
 }
 
-/** Shape an Edge Function payload into our records. */
-function normalizeLive(
-  clientId: string,
-  input: { firstName: string; lastName: string; email?: string; phone?: string; myfreescorenowId?: string },
-  data: {
-    report: { experian?: number; equifax?: number; transunion?: number };
-    negatives?: Array<{ bureau: string; type: string; creditor: string; balance: number; status?: string; remarks?: string }>;
-    inquiries?: Array<{ bureau: string; date: string; creditor: string }>;
-  },
-): ImportResult {
-  const client: Client = {
-    id: clientId,
-    firstName: input.firstName,
-    lastName: input.lastName,
-    email: input.email,
-    phone: input.phone,
-    status: "imported",
-    round: 0,
-    myfreescorenowId: input.myfreescorenowId,
-  };
-  const report: CreditReport = {
-    id: uid("cr"),
-    clientId,
-    reportDate: new Date().toISOString().slice(0, 10),
-    experianScore: data.report.experian,
-    equifaxScore: data.report.equifax,
-    transunionScore: data.report.transunion,
-  };
-  const negatives: NegativeAccount[] = (data.negatives ?? []).map((n) => ({
-    id: uid("na"),
-    clientId,
-    bureau: n.bureau,
-    accountType: n.type,
-    creditor: n.creditor,
-    balance: n.balance,
-    status: n.status ?? "open",
-    remarks: n.remarks,
-  }));
-  const inquiries: Inquiry[] = (data.inquiries ?? []).map((q) => ({
-    id: uid("iq"),
-    clientId,
-    bureau: q.bureau,
-    inquiryDate: q.date,
-    creditor: q.creditor,
-  }));
-  return { client, report, negatives, inquiries, source: "live" };
+/** Lightweight server status probe (is MFSN_API_KEY set? which endpoints?). */
+export async function pingMfsn(): Promise<{ configured: boolean; mode: "live" | "demo"; note?: string } | null> {
+  if (!isSupabaseConfigured) return { configured: false, mode: "demo", note: "Supabase not configured." };
+  const sb = createClient();
+  if (!sb) return null;
+  const { data, error } = await sb.functions.invoke("mfsn-import", { body: { action: "ping" } });
+  if (error || !data) return null;
+  return { configured: !!data.configured, mode: data.mode, note: data.note };
 }
 
-const SAMPLE_CREDITORS = ["Midland Credit", "Portfolio Recovery", "LVNV Funding", "Capital One", "Santander", "Synchrony Bank"];
-const SAMPLE_TYPES = ["collection", "charge_off", "late_payment", "medical"];
+const uid = (p: string) => `${p}-${crypto.randomUUID().slice(0, 8)}`;
 
-function demoImport(
-  clientId: string,
-  input: { firstName: string; lastName: string; email?: string; phone?: string; myfreescorenowId?: string },
-): ImportResult {
+function localDemo(input: { firstName: string; lastName: string; email?: string; phone?: string; myfreescorenowId?: string }): ImportResult {
+  const clientId = uid("cl");
   const base = 540 + Math.floor(Math.random() * 90);
   const client: Client = {
     id: clientId,
@@ -146,29 +121,44 @@ function demoImport(
     phone: input.phone,
     status: "imported",
     round: 0,
+    source: "myfreescorenow",
     myfreescorenowId: input.myfreescorenowId || uid("MFSN"),
+    dateAdded: new Date().toISOString().slice(0, 10),
   };
+  const reportId = uid("cr");
   const report: CreditReport = {
-    id: uid("cr"),
+    id: reportId,
     clientId,
     reportDate: new Date().toISOString().slice(0, 10),
-    experianScore: base + Math.floor(Math.random() * 20),
-    equifaxScore: base - Math.floor(Math.random() * 15),
-    transunionScore: base + Math.floor(Math.random() * 10),
+    experianScore: base + 12,
+    equifaxScore: base - 8,
+    transunionScore: base + 4,
   };
-  const count = 2 + Math.floor(Math.random() * 3);
-  const negatives: NegativeAccount[] = Array.from({ length: count }).map((_, i) => ({
-    id: uid("na"),
+  const utilization: CreditUtilization = {
+    id: uid("ut"),
     clientId,
-    bureau: i % 2 === 0 ? "All" : "Experian",
-    accountType: SAMPLE_TYPES[i % SAMPLE_TYPES.length],
-    creditor: SAMPLE_CREDITORS[i % SAMPLE_CREDITORS.length],
-    balance: [410, 920, 1840, 2310][i % 4],
-    status: "open",
-    remarks: "Imported from MyFreeScoreNow — pending analysis.",
-  }));
+    reportId,
+    totalLimit: 8200,
+    totalBalance: 5740,
+    utilizationPct: 70,
+  };
+  const negatives: NegativeAccount[] = [
+    { id: uid("na"), clientId, bureau: "All", accountType: "collection", creditor: "Midland Credit", balance: 1840, status: "open", remarks: "Imported — pending analysis." },
+    { id: uid("na"), clientId, bureau: "Experian", accountType: "charge_off", creditor: "Capital One", balance: 2310, status: "open", remarks: "Imported — pending analysis." },
+  ];
   const inquiries: Inquiry[] = [
     { id: uid("iq"), clientId, bureau: "Experian", inquiryDate: new Date().toISOString().slice(0, 10), creditor: "Credit One Bank" },
   ];
-  return { client, report, negatives, inquiries, source: "demo" };
+  const publicRecords: PublicRecord[] = [];
+  const personalInfo: PersonalInformation[] = [
+    { id: uid("pi"), clientId, infoType: "address", value: "Old address on file", bureau: "Experian", status: "old" },
+  ];
+  persist({ client, report, utilization, negatives, inquiries, publicRecords, personalInfo });
+  return {
+    clientId,
+    source: "myfreescorenow",
+    mode: "demo",
+    status: "success",
+    counts: { negatives: negatives.length, inquiries: inquiries.length, publicRecords: 0, personalInfo: personalInfo.length },
+  };
 }

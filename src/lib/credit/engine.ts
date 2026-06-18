@@ -203,6 +203,46 @@ export function recommendations(
   return recs.slice(0, 6);
 }
 
+export type FundingBand = "Not Ready" | "Almost Ready" | "Funding Ready";
+export interface FundingReadiness {
+  band: FundingBand;
+  score: number; // 0–100
+  factors: { label: string; ok: boolean; detail: string }[];
+  recommendedPath: string;
+}
+
+/** Funding / approval readiness from scores, utilization, inquiries, derogatories. */
+export function fundingReadiness(
+  avgScore: number,
+  utilizationPct: number | undefined,
+  inquiriesCount: number,
+  negatives: NegativeAccount[],
+): FundingReadiness {
+  const open = negatives.filter((n) => n.status !== "deleted" && n.status !== "paid");
+  const util = utilizationPct ?? 0;
+
+  const factors = [
+    { label: "Score threshold", ok: avgScore >= 640, detail: `Avg ${avgScore || "—"} (need 640+)` },
+    { label: "Utilization", ok: util > 0 ? util <= 30 : true, detail: `${util}% (keep ≤30%, ideal <10%)` },
+    { label: "Inquiry risk", ok: inquiriesCount <= 4, detail: `${inquiriesCount} hard inquiries (keep ≤4)` },
+    { label: "Derogatories", ok: open.length === 0, detail: `${open.length} active derogatory item(s)` },
+  ];
+
+  const passed = factors.filter((f) => f.ok).length;
+  const score = Math.round((passed / factors.length) * 100);
+  const band: FundingBand = passed === 4 ? "Funding Ready" : passed >= 2 ? "Almost Ready" : "Not Ready";
+
+  let recommendedPath: string;
+  if (band === "Funding Ready") recommendedPath = "Pursue primary financing — prime cards / installment / business funding.";
+  else if (band === "Almost Ready") {
+    if (util > 30) recommendedPath = "Pay down revolving balances below 30% first, then re-pull.";
+    else if (open.length) recommendedPath = "Clear remaining derogatories via dispute, then qualify.";
+    else recommendedPath = "Add a positive tradeline and let inquiries age, then re-pull.";
+  } else recommendedPath = "Run the full dispute track + utilization paydown before any funding application.";
+
+  return { band, score, factors, recommendedPath };
+}
+
 /* ── Live-AI seam (future) ────────────────────────────────────────────────────
  * When the `credit-analyze` Supabase Edge Function is deployed (Claude as the
  * reasoning engine), this is where the call goes. Until then the deterministic

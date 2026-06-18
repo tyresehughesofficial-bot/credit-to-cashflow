@@ -7,9 +7,12 @@
 import type {
   Client,
   CreditReport,
+  CreditUtilization,
   DisputeRound,
   Inquiry,
   NegativeAccount,
+  PersonalInformation,
+  PublicRecord,
 } from "./types";
 
 export const CLIENT_SEED: Client[] = [
@@ -21,7 +24,9 @@ export const CLIENT_SEED: Client[] = [
     phone: "(404) 555-0142",
     status: "disputing",
     round: 2,
+    source: "myfreescorenow",
     myfreescorenowId: "MFSN-48213",
+    dateAdded: "2026-04-10",
   },
   {
     id: "cl-002",
@@ -31,8 +36,36 @@ export const CLIENT_SEED: Client[] = [
     phone: "(305) 555-0188",
     status: "analyzing",
     round: 1,
+    source: "myfreescorenow",
     myfreescorenowId: "MFSN-50917",
+    dateAdded: "2026-06-09",
   },
+];
+
+export const UTILIZATION_SEED: CreditUtilization[] = [
+  { id: "ut-001", clientId: "cl-001", reportId: "cr-001", totalLimit: 9200, totalBalance: 7360, utilizationPct: 80 },
+  { id: "ut-002", clientId: "cl-002", reportId: "cr-002", totalLimit: 14500, totalBalance: 3915, utilizationPct: 27 },
+];
+
+export const PUBLIC_RECORD_SEED: PublicRecord[] = [
+  {
+    id: "pr-001",
+    clientId: "cl-001",
+    bureau: "All",
+    recordType: "judgment",
+    status: "open",
+    amount: 1250,
+    filedDate: "2022-06-01",
+    reference: "CV-2022-4471",
+    remarks: "Civil judgment — verify service & accuracy.",
+  },
+];
+
+export const PERSONAL_INFO_SEED: PersonalInformation[] = [
+  { id: "pi-001", clientId: "cl-001", infoType: "address", value: "881 Old Mill Rd, Atlanta, GA 30318", bureau: "Experian", status: "old" },
+  { id: "pi-002", clientId: "cl-001", infoType: "address", value: "12 Peachtree Ln, Atlanta, GA 30303", bureau: "All", status: "current" },
+  { id: "pi-003", clientId: "cl-001", infoType: "employer", value: "Delta Logistics", bureau: "Equifax", status: "current" },
+  { id: "pi-004", clientId: "cl-002", infoType: "address", value: "455 Brickell Ave, Miami, FL 33131", bureau: "All", status: "current" },
 ];
 
 export const REPORT_SEED: CreditReport[] = [
