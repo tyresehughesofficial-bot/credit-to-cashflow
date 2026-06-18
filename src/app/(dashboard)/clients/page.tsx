@@ -741,7 +741,7 @@ function ImportDialog({
         </div>
         <p className="mb-4 text-xs text-muted-foreground">
           Pulls the member&apos;s tri-bureau report, runs analysis, and seeds the command profile. Uses the live
-          <span className="text-gold"> mfsn-import</span> Edge Function when configured, otherwise a demo import.
+          <span className="text-gold"> mfsn_import</span> Edge Function when configured, otherwise a demo import.
         </p>
         <div className="space-y-3">
           <div className="grid grid-cols-2 gap-3">

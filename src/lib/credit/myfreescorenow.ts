@@ -2,7 +2,7 @@
  * MYFREESCORENOW INTEGRATION (frontend seam).
  *
  * MyFreeScoreNow feeds the Client Command Center ONLY. The browser never holds
- * the API token — it invokes the `mfsn-import` Supabase Edge Function, which
+ * the API token — it invokes the `mfsn_import` Supabase Edge Function, which
  * reads MFSN_API_KEY server-side, pulls + normalizes the report, writes through
  * to Supabase, and returns the normalized records. We then upsert those into the
  * local collections so the UI updates instantly.
@@ -10,7 +10,7 @@
  * Multi-source by design (source = "myfreescorenow" | "disputefox" | "manual");
  * only "myfreescorenow" is wired now.
  *
- * Flow: Command Center → mfsn-import → MFSN API → normalize → Supabase → UI.
+ * Flow: Command Center → mfsn_import → MFSN API → normalize → Supabase → UI.
  */
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/client";
 import { collectionUpsert, type Row } from "@/lib/db/use-collection";
@@ -57,7 +57,7 @@ function persist(data: {
 
 /**
  * Import a client from MyFreeScoreNow.
- * Invokes the `mfsn-import` Edge Function (live when MFSN_API_KEY is set on the
+ * Invokes the `mfsn_import` Edge Function (live when MFSN_API_KEY is set on the
  * server, demo otherwise). Falls back to a local demo import if Supabase isn't
  * configured at all, so the workflow is never blocked.
  */
@@ -71,7 +71,7 @@ export async function importClient(input: {
   if (isSupabaseConfigured) {
     const sb = createClient();
     if (sb) {
-      const { data, error } = await sb.functions.invoke("mfsn-import", {
+      const { data, error } = await sb.functions.invoke("mfsn_import", {
         body: {
           action: "import",
           memberId: input.myfreescorenowId,
@@ -103,7 +103,7 @@ export async function pingMfsn(): Promise<{ configured: boolean; mode: "live" | 
   if (!isSupabaseConfigured) return { configured: false, mode: "demo", note: "Supabase not configured." };
   const sb = createClient();
   if (!sb) return null;
-  const { data, error } = await sb.functions.invoke("mfsn-import", { body: { action: "ping" } });
+  const { data, error } = await sb.functions.invoke("mfsn_import", { body: { action: "ping" } });
   if (error || !data) return null;
   return { configured: !!data.configured, mode: data.mode, note: data.note };
 }

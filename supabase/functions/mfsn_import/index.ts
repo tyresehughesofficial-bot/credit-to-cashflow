@@ -1,9 +1,9 @@
-// Supabase Edge Function: mfsn-import
+// Supabase Edge Function: mfsn_import
 //
 // Securely connects the Client Command Center to MyFreeScoreNow. The MFSN_API_KEY
 // secret lives only here — the frontend never sees it.
 //
-//   Browser → invoke("mfsn-import", { action, memberId, demo })
+//   Browser → invoke("mfsn_import", { action, memberId, demo })
 //           → MFSN adapter (live API or demo payload)
 //           → normalize → write-through to Supabase (service role)
 //           → import_logs audit row
@@ -16,7 +16,7 @@
 //
 // Secrets: MFSN_API_KEY (required for live), optional MFSN_BASE_URL /
 //   MFSN_AUTH_HEADER / MFSN_AUTH_PREFIX / MFSN_EP_* (see mfsn.ts).
-// Deploy:  supabase functions deploy mfsn-import --no-verify-jwt
+// Deploy:  supabase functions deploy mfsn_import --no-verify-jwt
 //   (the publishable key is not a JWT, so JWT verification must be off.)
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";

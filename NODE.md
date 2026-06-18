@@ -35,7 +35,7 @@ npm start               # next start
 Running as a Node server unlocks things static GitHub Pages can't do:
 
 - **API routes** — add `src/app/api/<name>/route.ts` handlers (e.g. an
-  `mfsn-import` endpoint) that run on the server.
+  `mfsn_import` endpoint) that run on the server.
 - **Server-side secrets** — read `process.env.MFSN_API_KEY`,
   `SUPABASE_SERVICE_ROLE_KEY`, `ANTHROPIC_API_KEY` on the server; they are
   never shipped to the browser.
