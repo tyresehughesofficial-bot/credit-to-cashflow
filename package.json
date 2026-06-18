@@ -7,6 +7,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
+    "build:node": "next build && cp -r public .next/standalone/ && cp -r .next/static .next/standalone/.next/",
+    "start:node": "node .next/standalone/server.js",
+    "build:pages": "PAGES_EXPORT=true next build",
     "lint": "next lint",
     "typecheck": "tsc --noEmit"
   },

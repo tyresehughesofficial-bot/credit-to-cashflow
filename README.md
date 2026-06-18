@@ -7,6 +7,8 @@ Apple-level-simple, and fast.
 Built with **Next.js (App Router) · TypeScript · Tailwind CSS · Shadcn-style UI
 · Supabase**.
 
+**▶ Run as a Node.js server:** see **[NODE.md](./NODE.md)** (`npm run build:node && npm run start:node`).
+
 **▶ Live deploy:** see **[DEPLOY.md](./DEPLOY.md)** for a 2-minute Vercel deploy (no env vars needed).
 
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/tyresehughesofficial-bot/credit-to-cashflow&project-name=triad-t-command-center)
