@@ -36,8 +36,7 @@ export interface ImportResult {
 const up = (table: string, rec: Record<string, unknown> & { id?: string }) =>
   collectionUpsert(table, { id: rec.id ?? crypto.randomUUID(), ...rec } as Row);
 
-/** Push the Edge Function's normalized payload into local collections (instant UI). */
-function persist(data: {
+interface ImportPayload {
   client: Client;
   report: CreditReport;
   utilization: CreditUtilization | null;
@@ -45,7 +44,10 @@ function persist(data: {
   inquiries: Inquiry[];
   publicRecords: PublicRecord[];
   personalInfo: PersonalInformation[];
-}) {
+}
+
+/** Push the Edge Function's normalized payload into local collections (instant UI). */
+function persist(data: ImportPayload) {
   up("clients", data.client as unknown as Row);
   up("credit_reports", data.report as unknown as Row);
   if (data.utilization) up("credit_utilization", data.utilization as unknown as Row);
@@ -96,6 +98,38 @@ export async function importClient(input: {
   }
   // Local-only fallback (no backend configured).
   return localDemo(input);
+}
+
+export interface SyncAllResult {
+  mode: "live" | "demo";
+  imported: number;
+  success: number;
+  partial: number;
+  failed: number;
+}
+
+/**
+ * Bulk import EVERY client from the MyFreeScoreNow portal (action "import-all").
+ * The Edge Function lists all members server-side and pulls each report, then we
+ * persist every result into the local collections so the whole feed populates.
+ * Requires the live MFSN endpoints to be configured (returns an error otherwise).
+ */
+export async function importAllClients(): Promise<SyncAllResult | { error: string }> {
+  if (!isSupabaseConfigured) return { error: "Supabase not configured." };
+  const sb = createClient();
+  if (!sb) return { error: "Supabase client unavailable." };
+  const { data, error } = await sb.functions.invoke("mfsn_import", { body: { action: "import-all" } });
+  if (error) return { error: error.message ?? "Import failed." };
+  if (data?.success === false || data?.error) return { error: data?.error ?? "Import failed." };
+  const results = (data?.results ?? []) as Array<{ status: string; data?: ImportPayload }>;
+  results.forEach((r) => { if (r.data) persist(r.data); });
+  return {
+    mode: data?.mode === "demo" ? "demo" : "live",
+    imported: data?.imported ?? results.length,
+    success: results.filter((r) => r.status === "success").length,
+    partial: results.filter((r) => r.status === "partial").length,
+    failed: results.filter((r) => r.status === "error").length,
+  };
 }
 
 /** Lightweight server status probe (is MFSN_API_KEY set? which endpoints?). */

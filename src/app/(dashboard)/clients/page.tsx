@@ -16,6 +16,7 @@ import {
   Landmark,
   CheckCircle2,
   XCircle,
+  RefreshCw,
 } from "lucide-react";
 
 import { PageHeader } from "@/components/shared/page-header";
@@ -65,7 +66,7 @@ import {
   recommendations,
   fundingReadiness,
 } from "@/lib/credit/engine";
-import { importClient, type ImportResult } from "@/lib/credit/myfreescorenow";
+import { importClient, importAllClients, type ImportResult } from "@/lib/credit/myfreescorenow";
 
 const inputCls =
   "w-full rounded-md border border-border bg-background px-2.5 py-2 text-sm text-foreground outline-none focus:border-gold/50";
@@ -112,6 +113,22 @@ export default function ClientCommandCenter() {
   const [selectedId, setSelectedId] = useState<string | null>(CLIENT_SEED[0]?.id ?? null);
   const [importing, setImporting] = useState(false);
   const [lastImport, setLastImport] = useState<ImportResult | null>(null);
+  const [syncing, setSyncing] = useState(false);
+  const [syncMsg, setSyncMsg] = useState<string | null>(null);
+
+  async function handleSyncAll() {
+    setSyncing(true);
+    setSyncMsg(null);
+    const res = await importAllClients();
+    setSyncing(false);
+    if ("error" in res) {
+      setSyncMsg(`Sync failed: ${res.error}`);
+    } else {
+      setSyncMsg(
+        `Synced ${res.imported} client${res.imported === 1 ? "" : "s"} from MyFreeScoreNow (${res.success} ok, ${res.partial} partial, ${res.failed} failed).`,
+      );
+    }
+  }
 
   const filtered = useMemo(() => {
     const q = query.toLowerCase();
@@ -132,9 +149,15 @@ export default function ClientCommandCenter() {
         title="Client Command Center"
         description="Operational HQ — import from MyFreeScoreNow, read & analyze the tri-bureau report, diagnose health, generate the action plan & dispute strategy, and track every round."
         actions={
-          <Button size="sm" onClick={() => setImporting(true)}>
-            <UserPlus className="h-4 w-4" /> Import Client
-          </Button>
+          <>
+            <Button size="sm" variant="outline" onClick={handleSyncAll} disabled={syncing}>
+              {syncing ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
+              Import All from MyFreeScoreNow
+            </Button>
+            <Button size="sm" onClick={() => setImporting(true)}>
+              <UserPlus className="h-4 w-4" /> Import Client
+            </Button>
+          </>
         }
       />
 
@@ -240,6 +263,15 @@ export default function ClientCommandCenter() {
             setImporting(false);
           }}
         />
+      )}
+
+      {syncMsg && (
+        <div className="mb-6 flex items-start justify-between gap-3 rounded-xl border border-gold/30 bg-gold/5 p-4">
+          <p className="text-sm">{syncMsg}</p>
+          <button onClick={() => setSyncMsg(null)} className="text-muted-foreground hover:text-foreground">
+            <X className="h-4 w-4" />
+          </button>
+        </div>
       )}
 
       {lastImport && (
