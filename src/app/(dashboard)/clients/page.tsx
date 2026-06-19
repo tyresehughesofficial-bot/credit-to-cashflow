@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import {
   Users,
   Search,
@@ -17,6 +17,7 @@ import {
   CheckCircle2,
   XCircle,
   RefreshCw,
+  Upload,
 } from "lucide-react";
 
 import { PageHeader } from "@/components/shared/page-header";
@@ -66,7 +67,7 @@ import {
   recommendations,
   fundingReadiness,
 } from "@/lib/credit/engine";
-import { importClient, importAllClients, type ImportResult } from "@/lib/credit/myfreescorenow";
+import { importClient, importAllClients, importMemberListCSV, type ImportResult } from "@/lib/credit/myfreescorenow";
 
 const inputCls =
   "w-full rounded-md border border-border bg-background px-2.5 py-2 text-sm text-foreground outline-none focus:border-gold/50";
@@ -115,6 +116,17 @@ export default function ClientCommandCenter() {
   const [lastImport, setLastImport] = useState<ImportResult | null>(null);
   const [syncing, setSyncing] = useState(false);
   const [syncMsg, setSyncMsg] = useState<string | null>(null);
+  const csvRef = useRef<HTMLInputElement>(null);
+
+  function handleCsv(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    file.text().then((text) => {
+      const { added, skipped } = importMemberListCSV(text);
+      setSyncMsg(`Imported ${added} client${added === 1 ? "" : "s"} from the MyFreeScoreNow CSV${skipped ? ` (${skipped} rows skipped)` : ""}.`);
+    });
+    e.target.value = "";
+  }
 
   async function handleSyncAll() {
     setSyncing(true);
@@ -150,9 +162,13 @@ export default function ClientCommandCenter() {
         description="Operational HQ — import from MyFreeScoreNow, read & analyze the tri-bureau report, diagnose health, generate the action plan & dispute strategy, and track every round."
         actions={
           <>
+            <input ref={csvRef} type="file" accept=".csv" hidden onChange={handleCsv} />
+            <Button size="sm" variant="outline" onClick={() => csvRef.current?.click()}>
+              <Upload className="h-4 w-4" /> Import Member CSV
+            </Button>
             <Button size="sm" variant="outline" onClick={handleSyncAll} disabled={syncing}>
               {syncing ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
-              Import All from MyFreeScoreNow
+              Sync All (API)
             </Button>
             <Button size="sm" onClick={() => setImporting(true)}>
               <UserPlus className="h-4 w-4" /> Import Client

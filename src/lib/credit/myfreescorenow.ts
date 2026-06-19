@@ -14,6 +14,7 @@
  */
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/client";
 import { collectionUpsert, type Row } from "@/lib/db/use-collection";
+import { parseCSV } from "@/lib/db/csv";
 import type {
   Client,
   CreditReport,
@@ -143,6 +144,68 @@ export async function pingMfsn(): Promise<{ configured: boolean; mode: "live" | 
 }
 
 const uid = (p: string) => `${p}-${crypto.randomUUID().slice(0, 8)}`;
+
+/* ─────────── MyFreeScoreNow Member List CSV import (client roster) ─────────── */
+
+/** MM/DD/YYYY (or similar) → YYYY-MM-DD; returns undefined if unparseable. */
+function normalizeDate(s: string): string | undefined {
+  if (!s) return undefined;
+  const m = s.match(/^(\d{1,2})[/-](\d{1,2})[/-](\d{2,4})$/);
+  if (m) {
+    const [, mm, dd, yy] = m;
+    const year = yy.length === 2 ? `20${yy}` : yy;
+    return `${year}-${mm.padStart(2, "0")}-${dd.padStart(2, "0")}`;
+  }
+  const d = new Date(s);
+  return isNaN(d.getTime()) ? undefined : d.toISOString().slice(0, 10);
+}
+
+/**
+ * Import the MyFreeScoreNow "Member List" CSV export into the clients feed.
+ * Maps the roster (name/email/phone/enrolled date/member id) — credit-report
+ * data still comes from the token API later. Tolerant of header naming.
+ */
+export function importMemberListCSV(text: string): { added: number; skipped: number } {
+  const rows = parseCSV(text);
+  let added = 0;
+  let skipped = 0;
+  for (const raw of rows) {
+    const lower: Record<string, string> = {};
+    for (const k of Object.keys(raw)) lower[k.trim().toLowerCase()] = raw[k];
+    const pick = (...keys: string[]) => {
+      for (const key of keys) if (lower[key]) return lower[key].trim();
+      return "";
+    };
+    const name = pick("name", "full name", "member name", "client name", "member");
+    const email = pick("email", "email address", "e-mail");
+    if (!name && !email) {
+      skipped++;
+      continue;
+    }
+    const phone = pick("phone no", "phone", "phone number", "mobile", "cell", "phone no.");
+    const enrolled = pick("enrolled date", "enrollment date", "date added", "enrolled", "created");
+    const extId = pick("member id", "client id", "memberid", "member no", "id");
+    const parts = name.split(/\s+/);
+    const firstName = parts[0] || name || "Member";
+    const lastName = parts.slice(1).join(" ");
+    const client: Client = {
+      id: uid("cl"),
+      firstName,
+      lastName,
+      email: email || undefined,
+      phone: phone || undefined,
+      status: "imported",
+      round: 0,
+      source: "myfreescorenow",
+      myfreescorenowId: extId || undefined,
+      externalId: extId || undefined,
+      dateAdded: normalizeDate(enrolled),
+    };
+    collectionUpsert("clients", client as unknown as Row);
+    added++;
+  }
+  return { added, skipped };
+}
 
 function localDemo(input: { firstName: string; lastName: string; email?: string; phone?: string; myfreescorenowId?: string }): ImportResult {
   const clientId = uid("cl");
