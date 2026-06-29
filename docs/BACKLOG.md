@@ -20,7 +20,7 @@ Status: 🔴 not started · 🟡 partial · ✅ done. Cross-ref: `SYSTEM_AUDIT.m
 - 🔴 Persist phase artifacts (so generated letters are saved, not regenerated each visit).
 
 ## Auth / Roles / Team (W2 — see commit)
-- 🟡 **2FA / MFA** — UI toggle scaffolded; TOTP enrollment + verification flow deferred.
+- ✅ **2FA / MFA (TOTP)** — Supabase MFA: enroll (QR+secret) & manage in Profile; AuthGate enforces the AAL2 challenge on protected routes. Works on both hosts.
 - 🔴 **Server-side route protection** — current gate is client-side (fine for static host; RLS protects data). Add middleware when on the Node-server host.
 - 🔴 **Granular permissions** — per-action (edit vs view) enforcement; W2 ships section-level nav gating only.
 - 🔴 **Team invites / user management UI** — admin invites users, assigns roles (currently via signup + profiles table).
@@ -33,7 +33,7 @@ Status: 🔴 not started · 🟡 partial · ✅ done. Cross-ref: `SYSTEM_AUDIT.m
 - ✅ Sales: Objection Handling, SMS/Email Templates, Consultation Scripts — built (template libraries).
 - ✅ Analytics: Content/Lead/Revenue Analytics — built (metrics + charts).
 - ✅ Content Ops: News & Trend Center — built.
-- 🟡 Automations, Scheduled Tasks, Workflow Builder (Runner) — UIs + manual 'Run now' + **run-automations Edge Function (scheduler seam, pg_cron)** done. TODO: event-driven DB triggers (new-lead webhook), Workflow Builder live execution.
+- 🟡 Automations — UIs + manual 'Run now' + run-automations fn + **pg_cron schedule (cron_automations.sql) — runs every 15 min**. TODO: event-driven DB triggers (new-lead webhook), Workflow Builder live execution.
 - ✅ System: Settings, Profile, Integrations, Logs — built. (Integrations: GHL connect pending W6.)
 
 ## New V2 modules to build
@@ -51,5 +51,5 @@ Status: 🔴 not started · 🟡 partial · ✅ done. Cross-ref: `SYSTEM_AUDIT.m
 
 ## Blocked — cannot be completed by me
 - 🔴 MyFreeScoreNow live report pull — needs the real API endpoint URL from your Secure API Control.
-- 🟡 Server-side route middleware + 2FA TOTP — UNBLOCKED by the Node host (Vercel/Docker config added). Implementation pending: cookie-based Supabase sessions (@supabase/ssr) for middleware; Supabase MFA for 2FA.
-- 🔴 Live Stripe charging — needs Stripe keys + checkout; payment tracking + link field already built.
+- 🟡 Server-side route middleware — needs Vercel-ONLY (Next forbids middleware/API routes in static export, which is the primary Pages deploy). Client AuthGate + RLS + 2FA cover security today; true server middleware = cookie-session refactor on a Vercel-only setup.
+- 🟡 Stripe — stripe-checkout Edge Function + lib/stripe + CRM 'Create payment link' built (graceful fallback). Needs STRIPE_SECRET_KEY secret to generate live links. TODO: webhook to auto-mark paid.

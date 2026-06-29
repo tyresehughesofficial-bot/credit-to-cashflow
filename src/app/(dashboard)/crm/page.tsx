@@ -30,6 +30,7 @@ import {
   type Stage,
 } from "@/lib/crm/data";
 import { sendMessage } from "@/lib/messaging";
+import { createPaymentLink } from "@/lib/stripe";
 
 const usd = (n: number) => `$${Math.round(n).toLocaleString()}`;
 
@@ -77,6 +78,22 @@ export default function CRMPage() {
 
   const [newActivity, setNewActivity] = useState({ contact: "", type: "note", summary: "" });
   const [sending, setSending] = useState(false);
+  const [pay, setPay] = useState({ contact: "", amount: "" });
+  const [payMsg, setPayMsg] = useState<string | null>(null);
+  const [payBusy, setPayBusy] = useState(false);
+
+  async function makePaymentLink() {
+    const amt = Number(pay.amount);
+    if (!pay.contact || !amt) return;
+    setPayBusy(true);
+    setPayMsg(null);
+    const c = contacts.records.find((x) => x.name === pay.contact);
+    const res = await createPaymentLink({ amount: amt, description: `Triad T — ${pay.contact}`, email: c?.email });
+    setPayBusy(false);
+    payments.add({ contact: pay.contact, amount: amt, method: "link", status: "pending", link: res.url ?? "", date: new Date().toISOString().slice(0, 10) } as Omit<Payment, "id">);
+    setPayMsg(res.ok ? `Live payment link created — ${res.url}` : "Recorded as pending. Set STRIPE_SECRET_KEY to generate a live checkout link.");
+    setPay({ contact: "", amount: "" });
+  }
 
   async function logActivity(sendIt: boolean) {
     if (!newActivity.contact || !newActivity.summary) return;
@@ -177,11 +194,31 @@ export default function CRMPage() {
         </TabsContent>
 
         {/* PAYMENTS */}
-        <TabsContent value="payments">
+        <TabsContent value="payments" className="space-y-4">
+          <div className="flex flex-wrap items-end gap-2 rounded-xl border border-gold/30 bg-card p-3">
+            <select
+              value={pay.contact}
+              onChange={(e) => setPay({ ...pay, contact: e.target.value })}
+              className="rounded-md border border-border bg-background px-2 py-2 text-sm outline-none focus:border-gold/50"
+            >
+              <option value="">Contact…</option>
+              {contacts.records.map((c) => (
+                <option key={c.id} value={c.name}>{c.name}</option>
+              ))}
+            </select>
+            <input
+              type="number"
+              placeholder="Amount $"
+              value={pay.amount}
+              onChange={(e) => setPay({ ...pay, amount: e.target.value })}
+              className="w-28 rounded-md border border-border bg-background px-3 py-2 text-sm outline-none focus:border-gold/50"
+            />
+            <Button size="sm" disabled={payBusy || !pay.contact || !pay.amount} onClick={makePaymentLink}>
+              {payBusy ? "…" : "Create payment link"}
+            </Button>
+            {payMsg && <span className="text-xs text-gold">{payMsg}</span>}
+          </div>
           <DataTable collection="crm_payments" seed={PAYMENT_SEED} fields={PAYMENT_FIELDS} title="Payments" searchKeys={["contact", "method", "status"]} />
-          <p className="mt-3 text-xs text-muted-foreground">
-            Tracks payment status + links. Live card charging connects via Stripe (payment link field) — set up in a later pass.
-          </p>
         </TabsContent>
 
         {/* ACTIVITY */}
