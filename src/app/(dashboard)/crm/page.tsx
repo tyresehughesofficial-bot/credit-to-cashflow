@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Contact2, Plus } from "lucide-react";
+import { Contact2, Plus, Send } from "lucide-react";
 
 import { PageHeader } from "@/components/shared/page-header";
 import { Badge } from "@/components/ui/badge";
@@ -17,13 +17,37 @@ import {
   ACTIVITY_SEED,
   ACTIVITY_TYPES,
   BOOKING_SEED,
+  DEAL_SEED,
+  DEAL_STATUS,
+  PAYMENT_SEED,
+  PAYMENT_METHODS,
+  PAYMENT_STATUS,
   pipelineValue,
   type Contact,
   type Activity,
+  type Deal,
+  type Payment,
   type Stage,
 } from "@/lib/crm/data";
+import { sendMessage } from "@/lib/messaging";
 
 const usd = (n: number) => `$${Math.round(n).toLocaleString()}`;
+
+const DEAL_FIELDS: Field[] = [
+  { key: "name", label: "Deal" },
+  { key: "contact", label: "Contact" },
+  { key: "offer", label: "Offer" },
+  { key: "amount", label: "Amount", type: "number" },
+  { key: "status", label: "Status", type: "select", options: DEAL_STATUS },
+];
+const PAYMENT_FIELDS: Field[] = [
+  { key: "contact", label: "Contact" },
+  { key: "amount", label: "Amount", type: "number" },
+  { key: "method", label: "Method", type: "select", options: PAYMENT_METHODS },
+  { key: "status", label: "Status", type: "select", options: PAYMENT_STATUS },
+  { key: "link", label: "Payment Link", hideInTable: true },
+  { key: "date", label: "Date" },
+];
 
 const CONTACT_FIELDS: Field[] = [
   { key: "name", label: "Name" },
@@ -42,11 +66,32 @@ export default function CRMPage() {
   const contacts = useCollection<Contact>("crm_contacts", CONTACT_SEED);
   const activities = useCollection<Activity>("crm_activities", ACTIVITY_SEED);
   const bookings = useCollection<Activity>("crm_bookings", BOOKING_SEED);
+  const deals = useCollection<Deal>("crm_deals", DEAL_SEED);
+  const payments = useCollection<Payment>("crm_payments", PAYMENT_SEED);
 
   const totalPipeline = useMemo(() => pipelineValue(contacts.records), [contacts.records]);
-  const closed = contacts.records.filter((c) => ["Closed Client", "Onboarding", "Active Fulfillment", "Completed"].includes(c.stage));
+  const collected = useMemo(
+    () => payments.records.filter((p) => p.status === "paid").reduce((a, p) => a + Number(p.amount || 0), 0),
+    [payments.records],
+  );
 
   const [newActivity, setNewActivity] = useState({ contact: "", type: "note", summary: "" });
+  const [sending, setSending] = useState(false);
+
+  async function logActivity(sendIt: boolean) {
+    if (!newActivity.contact || !newActivity.summary) return;
+    let note = "";
+    if (sendIt && (newActivity.type === "sms" || newActivity.type === "email")) {
+      setSending(true);
+      const c = contacts.records.find((x) => x.name === newActivity.contact);
+      const to = newActivity.type === "sms" ? c?.phone : c?.email;
+      const res = await sendMessage({ channel: newActivity.type as "sms" | "email", to: to ?? "", body: newActivity.summary });
+      setSending(false);
+      note = res.sent ? " (sent)" : " (queued — no provider)";
+    }
+    activities.add({ ...newActivity, summary: newActivity.summary + note, date: new Date().toISOString().slice(0, 10) } as Omit<Activity, "id">);
+    setNewActivity({ contact: "", type: "note", summary: "" });
+  }
 
   return (
     <div>
@@ -60,8 +105,8 @@ export default function CRMPage() {
         {[
           { label: "Contacts", value: contacts.records.length },
           { label: "Open Pipeline", value: usd(totalPipeline) },
-          { label: "Clients", value: closed.length },
-          { label: "Bookings", value: bookings.records.length },
+          { label: "Won Deals", value: deals.records.filter((d) => d.status === "won").length },
+          { label: "Collected", value: usd(collected) },
         ].map((s) => (
           <div key={s.label} className="rounded-xl border border-border bg-card p-4">
             <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">{s.label}</p>
@@ -74,6 +119,8 @@ export default function CRMPage() {
         <TabsList className="flex-wrap">
           <TabsTrigger value="pipeline">Pipeline</TabsTrigger>
           <TabsTrigger value="contacts">Contacts</TabsTrigger>
+          <TabsTrigger value="deals">Deals</TabsTrigger>
+          <TabsTrigger value="payments">Payments</TabsTrigger>
           <TabsTrigger value="activity">Activity</TabsTrigger>
           <TabsTrigger value="bookings">Bookings</TabsTrigger>
         </TabsList>
@@ -124,6 +171,19 @@ export default function CRMPage() {
           <DataTable collection="crm_contacts" seed={CONTACT_SEED} fields={CONTACT_FIELDS} title="Contacts" searchKeys={["name", "email", "owner", "offer"]} />
         </TabsContent>
 
+        {/* DEALS */}
+        <TabsContent value="deals">
+          <DataTable collection="crm_deals" seed={DEAL_SEED} fields={DEAL_FIELDS} title="Deals" searchKeys={["name", "contact", "offer"]} />
+        </TabsContent>
+
+        {/* PAYMENTS */}
+        <TabsContent value="payments">
+          <DataTable collection="crm_payments" seed={PAYMENT_SEED} fields={PAYMENT_FIELDS} title="Payments" searchKeys={["contact", "method", "status"]} />
+          <p className="mt-3 text-xs text-muted-foreground">
+            Tracks payment status + links. Live card charging connects via Stripe (payment link field) — set up in a later pass.
+          </p>
+        </TabsContent>
+
         {/* ACTIVITY */}
         <TabsContent value="activity" className="space-y-4">
           <div className="flex flex-wrap items-end gap-2 rounded-xl border border-border bg-card p-3">
@@ -152,16 +212,14 @@ export default function CRMPage() {
               onChange={(e) => setNewActivity({ ...newActivity, summary: e.target.value })}
               className="min-w-[200px] flex-1 rounded-md border border-border bg-background px-3 py-2 text-sm outline-none focus:border-gold/50"
             />
-            <Button
-              size="sm"
-              disabled={!newActivity.contact || !newActivity.summary}
-              onClick={() => {
-                activities.add({ ...newActivity, date: new Date().toISOString().slice(0, 10) } as Omit<Activity, "id">);
-                setNewActivity({ contact: "", type: "note", summary: "" });
-              }}
-            >
+            <Button size="sm" variant="outline" disabled={!newActivity.contact || !newActivity.summary} onClick={() => logActivity(false)}>
               <Plus className="h-4 w-4" /> Log
             </Button>
+            {(newActivity.type === "sms" || newActivity.type === "email") && (
+              <Button size="sm" disabled={sending || !newActivity.contact || !newActivity.summary} onClick={() => logActivity(true)}>
+                <Send className="h-4 w-4" /> Send &amp; log
+              </Button>
+            )}
           </div>
           <div className="space-y-2">
             {[...activities.records].reverse().map((a) => (

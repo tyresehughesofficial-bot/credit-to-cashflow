@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Sparkles, Wand2, Radar, CalendarPlus, PenLine, ArrowRight } from "lucide-react";
 
 import { PageHeader } from "@/components/shared/page-header";
+import { AIPanel } from "@/components/ai/ai-panel";
 import { CopyButton } from "@/components/shared/copy-button";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -80,6 +81,15 @@ export default function ContentEnginePage() {
             </span>
           </Link>
         }
+      />
+
+      <AIPanel
+        className="mb-6"
+        title="AI Idea Generator"
+        cta="Generate 10 ideas"
+        system="You are a short-form content strategist for a credit-repair and business-funding brand (Triad T). Output is punchy and on-brand."
+        prompt="Generate 10 short-form content ideas (mix of TOF, MOF, BOF). For each: a scroll-stopping hook, the format (reel/carousel/short), and the funnel stage. Keep each to one line."
+        fallback="Set ANTHROPIC_API_KEY in Supabase to generate ideas with AI. The deterministic generators below still work."
       />
 
       {/* Approved opportunities flowing in from the Intelligence Engine */}

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { FileText, PenLine, Wand2 } from "lucide-react";
 
 import { PageHeader } from "@/components/shared/page-header";
+import { AIPanel } from "@/components/ai/ai-panel";
 import { CopyButton } from "@/components/shared/copy-button";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -48,6 +49,15 @@ export default function ScriptWriterPage() {
         icon={<PenLine className="h-5 w-5" />}
         title="Script Writer"
         description="Generate reel scripts, carousel scripts, sales scripts, and captions in seconds."
+      />
+
+      <AIPanel
+        className="mb-6"
+        title="AI Script Writer"
+        cta="Write a reel script"
+        system="You are a direct-response scriptwriter for a credit & funding brand. Write tight, spoken-word reel scripts with a strong hook and CTA."
+        prompt="Write a 30-second reel script about why most people get denied for funding (and how Triad T fixes it). Include: HOOK, 3 beats, and a CTA to book a consult."
+        fallback="Set ANTHROPIC_API_KEY in Supabase to write scripts with AI. The generators below still work."
       />
 
       <Tabs defaultValue="generate">

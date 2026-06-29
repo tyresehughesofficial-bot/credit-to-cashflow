@@ -8,7 +8,7 @@ Status: 🔴 not started · 🟡 partial · ✅ done. Cross-ref: `SYSTEM_AUDIT.m
 ---
 
 ## Foundation / cross-cutting
-- 🟡 **Real AI** — DONE: `generate-text` Edge Function (Claude) + `lib/ai.ts → aiText()` seam + reusable `<AIPanel>`; wired into Prolific AI Strategist. TODO: roll AI into content engine, script writer, knowledge-vault RAG answers, credit diagnosis, intelligence — each is now a one-component drop-in.
+- 🟡 **Real AI** — `generate-text` fn + `aiText()` + `<AIPanel>`; wired into Prolific Strategist, Content Engine, Script Writer, SOP Generator, CFPB/writing tools. TODO: knowledge-vault RAG answers (embed user docs), credit-diagnosis second opinion, intelligence scoring.
 - 🟡 **Persistence** — confirm/apply ALL Supabase schemas in the live project (only Credit + MFSN + Prolific + auth so far). Tighten RLS from `using(true)` to `auth.uid()` org-membership once auth is live.
 - 🟡 **Auth (W2)** — see Auth section below for what's scaffolded vs deferred.
 - 🔴 **MyFreeScoreNow live report pull** — blocked on the real API endpoint (token model confirmed; endpoint URL still needed). CSV roster import works today.
@@ -42,7 +42,7 @@ Status: 🔴 not started · 🟡 partial · ✅ done. Cross-ref: `SYSTEM_AUDIT.m
 - ✅ Finance / Wealth Map — built (W5): revenue/expenses/payouts/profit + revenue-by-offer. TODO: AR/AP, taxes, cash reserves, monthly trend chart; merge /revenue-analytics.
 - ✅ SOP Library (+AI generator), Training Hub, IP Library — built (W4) as dedicated Operations Hub pages. TODO: deeper Knowledge Vault/RAG integration of SOPs.
 - ✅ Contracts hub — built (W4). TODO: per-client contract assignment + e-sign webhook status.
-- 🟡 **CRM (app replaces GHL)** — built (W6): contacts, 10-stage pipeline (kanban), activity log, bookings (src/lib/crm + crm_schema.sql). TODO: drag-drop, deals/payments, message-template sending, automation execution, GHL data import.
+- 🟡 **CRM (app replaces GHL)** — built (W6+): contacts, 10-stage pipeline, deals, payments, activity, bookings, real SMS/email send (send-message fn, Twilio/SendGrid) with simulated fallback, manual automation execution. TODO: drag-drop, live Stripe charging, scheduled/event automation (backend cron), GHL data import.
 
 ## Known polish / tech debt
 - 🟡 Several pages still use static `lib/data/mock` (command-center, content-engine, disputes, hooks, sales, script-writer) — migrate to live collections.

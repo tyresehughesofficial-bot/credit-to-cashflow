@@ -60,6 +60,39 @@ export const BOOKING_SEED: Activity[] = [
   { id: "bk-2", contact: "Priya Nair", type: "Discovery", summary: "Intro call", date: "2026-07-03 11:00" },
 ];
 
+export interface Deal extends Row {
+  id: string;
+  name: string;
+  contact: string;
+  offer: string;
+  amount: number;
+  status: string; // open | won | lost
+}
+export const DEAL_STATUS = ["open", "won", "lost"];
+export const DEAL_SEED: Deal[] = [
+  { id: "dl-1", name: "Bennett — Credit Repair", contact: "Marcus Bennett", offer: "Credit Repair", amount: 1497, status: "won" },
+  { id: "dl-2", name: "Reyes — BIAB", contact: "Alicia Reyes", offer: "Business-in-a-Box", amount: 2500, status: "won" },
+  { id: "dl-3", name: "Clark — Funding", contact: "Devon Clark", offer: "Business Funding", amount: 3200, status: "open" },
+  { id: "dl-4", name: "Mendez — Repair", contact: "Carlos Mendez", offer: "Credit Repair", amount: 1497, status: "open" },
+];
+
+export interface Payment extends Row {
+  id: string;
+  contact: string;
+  amount: number;
+  method: string; // card | ach | cash | link
+  status: string; // pending | paid | refunded
+  link: string;
+  date: string;
+}
+export const PAYMENT_METHODS = ["card", "ach", "cash", "link"];
+export const PAYMENT_STATUS = ["pending", "paid", "refunded"];
+export const PAYMENT_SEED: Payment[] = [
+  { id: "pm-1", contact: "Marcus Bennett", amount: 1497, method: "card", status: "paid", link: "", date: "2026-06-03" },
+  { id: "pm-2", contact: "Alicia Reyes", amount: 1250, method: "card", status: "paid", link: "", date: "2026-06-14" },
+  { id: "pm-3", contact: "Devon Clark", amount: 3200, method: "link", status: "pending", link: "triadt.co/pay/devon", date: "2026-06-28" },
+];
+
 export function pipelineValue(contacts: Contact[]): number {
   return contacts
     .filter((c) => c.stage !== "Completed" && c.stage !== "No Show")
