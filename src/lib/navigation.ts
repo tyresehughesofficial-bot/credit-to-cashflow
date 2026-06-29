@@ -451,6 +451,25 @@ export const NAV_SECTIONS: NavSection[] = [
     ],
   },
   {
+    label: "Money & Growth",
+    icon: DollarSign,
+    defaultOpen: false,
+    items: [
+      {
+        label: "Finance · Wealth Map",
+        href: "/finance",
+        icon: Wallet,
+        description: "Revenue, expenses, payouts, profit & offer performance.",
+      },
+      {
+        label: "Affiliate System",
+        href: "/affiliate",
+        icon: Trophy,
+        description: "Tiers, commissions, leaderboard & payouts.",
+      },
+    ],
+  },
+  {
     label: "Operations Hub",
     icon: BookOpen,
     defaultOpen: false,

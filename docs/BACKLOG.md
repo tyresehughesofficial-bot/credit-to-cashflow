@@ -38,8 +38,8 @@ Status: 🔴 not started · 🟡 partial · ✅ done. Cross-ref: `SYSTEM_AUDIT.m
 
 ## New V2 modules to build
 - ✅ Offers & Products catalog — built (W3). 🔴 Per-offer fulfillment pages + Business-in-a-Box tracker still to build.
-- 🔴 Affiliate System (tiers, commissions, onboarding, leaderboard, payouts).
-- 🔴 Finance / Wealth Map (revenue/expenses/payouts/AR/AP + offer performance).
+- ✅ Affiliate System — built (W5): tiers, commissions, leaderboard, payouts. TODO: affiliate onboarding portal + automated payout SOP.
+- ✅ Finance / Wealth Map — built (W5): revenue/expenses/payouts/profit + revenue-by-offer. TODO: AR/AP, taxes, cash reserves, monthly trend chart; merge /revenue-analytics.
 - ✅ SOP Library (+AI generator), Training Hub, IP Library — built (W4) as dedicated Operations Hub pages. TODO: deeper Knowledge Vault/RAG integration of SOPs.
 - ✅ Contracts hub — built (W4). TODO: per-client contract assignment + e-sign webhook status.
 - 🔴 **CRM (app replaces GHL)** — contacts, 10-stage pipelines, deals, activities, bookings, message templates, automations, payments. Large; sequenced W6–W7.
