@@ -26,10 +26,10 @@ export const ROLES: Role[] = [
 export const SECTION_ACCESS: Record<Role, string[] | "*"> = {
   Administrator: "*",
   Manager: "*",
-  "Credit Specialist": ["Home", "Credit System", "Client System", "Funding System", "Analytics"],
-  Sales: ["Home", "Sales System", "Client System", "Analytics"],
-  Editor: ["Home", "Content System", "Writing System", "Content Operations", "Intelligence Engine"],
-  Operations: ["Home", "Client System", "Automations", "Analytics", "System"],
+  "Credit Specialist": ["Home", "Credit System", "Client System", "Funding System", "Operations Hub", "Analytics"],
+  Sales: ["Home", "Sales System", "Client System", "Operations Hub", "Analytics"],
+  Editor: ["Home", "Content System", "Writing System", "Content Operations", "Intelligence Engine", "Operations Hub"],
+  Operations: ["Home", "Client System", "Operations Hub", "Automations", "Analytics", "System"],
   Guest: ["Home"],
 };
 

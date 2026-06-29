@@ -54,6 +54,9 @@ import {
   CircleUser,
   Plug,
   Package,
+  GraduationCap,
+  FileText,
+  FileSignature,
   type LucideIcon,
 } from "lucide-react";
 
@@ -444,6 +447,37 @@ export const NAV_SECTIONS: NavSection[] = [
         href: "/revenue-analytics",
         icon: DollarSign,
         description: "MRR, funding commissions and revenue by source.",
+      },
+    ],
+  },
+  {
+    label: "Operations Hub",
+    icon: BookOpen,
+    defaultOpen: false,
+    items: [
+      {
+        label: "SOP Library",
+        href: "/sops",
+        icon: BookOpen,
+        description: "Every repeated task documented — with an AI SOP generator.",
+      },
+      {
+        label: "Training Hub",
+        href: "/training",
+        icon: GraduationCap,
+        description: "Sales, product, operations, and brand training modules.",
+      },
+      {
+        label: "Contracts",
+        href: "/contracts",
+        icon: FileSignature,
+        description: "Agreement hub + signed-status tracking (JotForm / DisputeFox).",
+      },
+      {
+        label: "IP Library",
+        href: "/ip-library",
+        icon: FileText,
+        description: "The Prolific Method, frameworks, and systems.",
       },
     ],
   },

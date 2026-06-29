@@ -40,8 +40,8 @@ Status: 🔴 not started · 🟡 partial · ✅ done. Cross-ref: `SYSTEM_AUDIT.m
 - ✅ Offers & Products catalog — built (W3). 🔴 Per-offer fulfillment pages + Business-in-a-Box tracker still to build.
 - 🔴 Affiliate System (tiers, commissions, onboarding, leaderboard, payouts).
 - 🔴 Finance / Wealth Map (revenue/expenses/payouts/AR/AP + offer performance).
-- 🔴 SOP Library + Training Hub + IP Library (fold into Knowledge Vault).
-- 🔴 Contracts hub (JotForm/DisputeFox links + signed-status tracking).
+- ✅ SOP Library (+AI generator), Training Hub, IP Library — built (W4) as dedicated Operations Hub pages. TODO: deeper Knowledge Vault/RAG integration of SOPs.
+- ✅ Contracts hub — built (W4). TODO: per-client contract assignment + e-sign webhook status.
 - 🔴 **CRM (app replaces GHL)** — contacts, 10-stage pipelines, deals, activities, bookings, message templates, automations, payments. Large; sequenced W6–W7.
 
 ## Known polish / tech debt
