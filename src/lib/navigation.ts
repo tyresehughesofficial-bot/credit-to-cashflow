@@ -57,6 +57,7 @@ import {
   GraduationCap,
   FileText,
   FileSignature,
+  Contact2,
   type LucideIcon,
 } from "lucide-react";
 
@@ -379,6 +380,19 @@ export const NAV_SECTIONS: NavSection[] = [
         href: "/personal-funding",
         icon: Wallet,
         description: "Personal credit analysis and approval pathways.",
+      },
+    ],
+  },
+  {
+    label: "CRM",
+    icon: Contact2,
+    defaultOpen: false,
+    items: [
+      {
+        label: "CRM Pipeline",
+        href: "/crm",
+        icon: Contact2,
+        description: "Contacts, the 10-stage pipeline, activity & bookings.",
       },
     ],
   },

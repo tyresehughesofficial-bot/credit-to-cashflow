@@ -27,9 +27,9 @@ export const SECTION_ACCESS: Record<Role, string[] | "*"> = {
   Administrator: "*",
   Manager: "*",
   "Credit Specialist": ["Home", "Credit System", "Client System", "Funding System", "Operations Hub", "Analytics"],
-  Sales: ["Home", "Sales System", "Client System", "Operations Hub", "Money & Growth", "Analytics"],
+  Sales: ["Home", "CRM", "Sales System", "Client System", "Operations Hub", "Money & Growth", "Analytics"],
   Editor: ["Home", "Content System", "Writing System", "Content Operations", "Intelligence Engine", "Operations Hub"],
-  Operations: ["Home", "Client System", "Operations Hub", "Money & Growth", "Automations", "Analytics", "System"],
+  Operations: ["Home", "CRM", "Client System", "Operations Hub", "Money & Growth", "Automations", "Analytics", "System"],
   Guest: ["Home"],
 };
 

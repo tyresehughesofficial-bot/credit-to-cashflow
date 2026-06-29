@@ -42,7 +42,7 @@ Status: 🔴 not started · 🟡 partial · ✅ done. Cross-ref: `SYSTEM_AUDIT.m
 - ✅ Finance / Wealth Map — built (W5): revenue/expenses/payouts/profit + revenue-by-offer. TODO: AR/AP, taxes, cash reserves, monthly trend chart; merge /revenue-analytics.
 - ✅ SOP Library (+AI generator), Training Hub, IP Library — built (W4) as dedicated Operations Hub pages. TODO: deeper Knowledge Vault/RAG integration of SOPs.
 - ✅ Contracts hub — built (W4). TODO: per-client contract assignment + e-sign webhook status.
-- 🔴 **CRM (app replaces GHL)** — contacts, 10-stage pipelines, deals, activities, bookings, message templates, automations, payments. Large; sequenced W6–W7.
+- 🟡 **CRM (app replaces GHL)** — built (W6): contacts, 10-stage pipeline (kanban), activity log, bookings (src/lib/crm + crm_schema.sql). TODO: drag-drop, deals/payments, message-template sending, automation execution, GHL data import.
 
 ## Known polish / tech debt
 - 🟡 Several pages still use static `lib/data/mock` (command-center, content-engine, disputes, hooks, sales, script-writer) — migrate to live collections.
