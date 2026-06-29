@@ -8,7 +8,7 @@ Status: 🔴 not started · 🟡 partial · ✅ done. Cross-ref: `SYSTEM_AUDIT.m
 ---
 
 ## Foundation / cross-cutting
-- 🔴 **Real AI** — implement `lib/ai.ts → generateWithAI()` (Claude Edge Function); wire behind existing seams (content, scripts, intelligence, knowledge-vault RAG, credit diagnosis).
+- 🟡 **Real AI** — DONE: `generate-text` Edge Function (Claude) + `lib/ai.ts → aiText()` seam + reusable `<AIPanel>`; wired into Prolific AI Strategist. TODO: roll AI into content engine, script writer, knowledge-vault RAG answers, credit diagnosis, intelligence — each is now a one-component drop-in.
 - 🟡 **Persistence** — confirm/apply ALL Supabase schemas in the live project (only Credit + MFSN + Prolific + auth so far). Tighten RLS from `using(true)` to `auth.uid()` org-membership once auth is live.
 - 🟡 **Auth (W2)** — see Auth section below for what's scaffolded vs deferred.
 - 🔴 **MyFreeScoreNow live report pull** — blocked on the real API endpoint (token model confirmed; endpoint URL still needed). CSV roster import works today.

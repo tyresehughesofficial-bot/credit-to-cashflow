@@ -39,6 +39,7 @@ import { INTAKE_QUESTIONS, PHASES } from "@/lib/prolific/data";
 import { PHASE_ORDER, type Journey, type Phase } from "@/lib/prolific/types";
 import { placePhase, buildPlan, nextMove, signalsFromCredit } from "@/lib/prolific/engine";
 import { phaseArtifact, type ArtifactBlock } from "@/lib/prolific/artifacts";
+import { AIPanel } from "@/components/ai/ai-panel";
 
 const PILLAR_CLASS: Record<string, string> = {
   Credit: "text-sky-300",
@@ -104,6 +105,26 @@ export default function ProlificMethodPage() {
       funding: credit.funding,
     });
   }, [client, credit, currentPhase, goal]);
+
+  const aiStrategy = useMemo(() => {
+    if (!client) return null;
+    const m = PHASES.find((p) => p.id === currentPhase)!;
+    return {
+      system:
+        "You are the lead credit & funding strategist at Triad T Enterprise. The framework is the Prolific Method (Credit → Structure → Capital → Growth). Be specific, practical, and compliant (FCRA/FDCPA).",
+      prompt:
+        `Client: ${fullName(client)}\n` +
+        `Phase: ${m.name} — ${m.summary}\n` +
+        `Goal: ${goal || "unspecified"}\n` +
+        `Diagnosis: ${credit?.diagnosis?.summary ?? "No report imported."}\n` +
+        `Problems: ${(credit?.diagnosis?.problems ?? []).join("; ") || "n/a"}\n` +
+        `Funding readiness: ${credit?.funding?.band ?? "unknown"}\n\n` +
+        `Write a tight ${m.name}-phase strategy: the 3–5 highest-impact moves for THIS client, specific to their data. Plain language, action-first, no fluff.`,
+      fallback:
+        `${nextMove(currentPhase, goal)}\n\nKey steps: ` +
+        (plan.find((p) => p.phase === currentPhase)?.steps ?? []).map((s) => s.label).join("; "),
+    };
+  }, [client, currentPhase, goal, credit, plan]);
 
   const completed = journey?.completedSteps ?? [];
   const totalSteps = plan.reduce((n, p) => n + p.steps.length, 0);
@@ -299,6 +320,17 @@ export default function ProlificMethodPage() {
                   ))}
                 </div>
               </div>
+
+              {/* AI Strategist (real Claude, falls back to deterministic) */}
+              {aiStrategy && (
+                <AIPanel
+                  title="AI Strategist"
+                  system={aiStrategy.system}
+                  prompt={aiStrategy.prompt}
+                  fallback={aiStrategy.fallback}
+                  cta="Generate strategy"
+                />
+              )}
             </div>
           </div>
 
