@@ -27,14 +27,14 @@ Status: 🔴 not started · 🟡 partial · ✅ done. Cross-ref: `SYSTEM_AUDIT.m
 - 🟡 **Weekly workflow automation** — Team OS shows the Mon/Wed/Fri rhythm; recurring task automation deferred to Automations wave.
 
 ## Stubs still to build (from SYSTEM_AUDIT)
-- ✅ Round Tracking, Negative Tracking, CFPB Center — built (W3). 🔴 Client Profiles still stub.
-- ✅ Approval Readiness — built (W3). 🔴 Business Funding, Personal Funding still stub.
-- 🔴 Writing: Caption Builder, Description Builder, CTA Generator (logic in `lib/generators`).
-- 🔴 Sales: Objection Handling, SMS/Email Templates, Consultation Scripts.
-- 🔴 Analytics: Content/Lead/Revenue Analytics.
-- 🔴 Content Ops: News & Trend Center.
-- 🔴 Automations: Automations, Scheduled Tasks, Workflow Builder (= Runner backbone).
-- 🔴 System: Settings, Profile, Integrations (GHL), Logs.
+- ✅ Round Tracking, Negative Tracking, CFPB Center, Client Profiles — built.
+- ✅ Approval Readiness, Business Funding, Personal Funding — built.
+- ✅ Writing: Caption/Description/CTA builders — built (AI generators + fallback).
+- ✅ Sales: Objection Handling, SMS/Email Templates, Consultation Scripts — built (template libraries).
+- ✅ Analytics: Content/Lead/Revenue Analytics — built (metrics + charts).
+- ✅ Content Ops: News & Trend Center — built.
+- 🟡 Automations, Scheduled Tasks, Workflow Builder (Runner) — built as functional UIs; live execution engine still TODO.
+- ✅ System: Settings, Profile, Integrations, Logs — built. (Integrations: GHL connect pending W6.)
 
 ## New V2 modules to build
 - ✅ Offers & Products catalog — built (W3). 🔴 Per-offer fulfillment pages + Business-in-a-Box tracker still to build.
