@@ -3,11 +3,14 @@
 import { useCallback, useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { ChevronLeft, ChevronRight, ChevronDown } from "lucide-react";
+import { usePathname, useRouter } from "next/navigation";
+import { ChevronLeft, ChevronRight, ChevronDown, LogOut } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { NAV_SECTIONS, type NavSection } from "@/lib/navigation";
+import { useAuth } from "@/lib/auth/use-auth";
+import { canAccessSection } from "@/lib/auth/roles";
+import { authConfigured } from "@/lib/auth/client";
 
 const COLLAPSE_KEY = "tt.sidebar.collapsed";
 const GROUPS_KEY = "tt.sidebar.groups";
@@ -189,6 +192,8 @@ export function SidebarNav({
   onNavigate?: () => void;
 }) {
   const { open, toggle } = useSectionState();
+  const { role } = useAuth();
+  const sections = NAV_SECTIONS.filter((s) => canAccessSection(role, s.label));
 
   return (
     <nav
@@ -197,7 +202,7 @@ export function SidebarNav({
         collapsed ? "items-center gap-1 px-2" : "gap-2 px-3",
       )}
     >
-      {NAV_SECTIONS.map((section) => (
+      {sections.map((section) => (
         <SectionGroup
           key={section.label}
           section={section}
@@ -302,18 +307,55 @@ export function Sidebar() {
 
       <SidebarNav collapsed={collapsed} />
 
-      {/* Footer */}
-      <div className="border-t border-border p-4 text-[10px] leading-relaxed text-muted-foreground">
-        {collapsed ? (
-          <p className="text-center font-bold text-gold/80">T</p>
-        ) : (
-          <>
-            TRIAD T ENTERPRISE™
-            <br />
-            AI Command Center · v1.0
-          </>
-        )}
-      </div>
+      {/* Footer — user chip */}
+      <UserChip collapsed={collapsed} />
     </aside>
+  );
+}
+
+/* ───────────────────────────────  User chip  ─────────────────────────────── */
+
+export function UserChip({ collapsed = false }: { collapsed?: boolean }) {
+  const { profile, role, signOut, mode } = useAuth();
+  const router = useRouter();
+  const name = profile?.fullName || profile?.email?.split("@")[0] || "Guest";
+  const initial = name.charAt(0).toUpperCase();
+
+  async function handleSignOut() {
+    await signOut();
+    if (authConfigured) router.replace("/login");
+  }
+
+  if (collapsed) {
+    return (
+      <div className="flex flex-col items-center gap-2 border-t border-border p-3">
+        <div className="flex h-8 w-8 items-center justify-center rounded-full border border-gold/30 bg-gold/10 text-xs font-bold text-gold">
+          {initial}
+        </div>
+        <button onClick={handleSignOut} title="Sign out" className="text-muted-foreground hover:text-destructive">
+          <LogOut className="h-4 w-4" />
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="border-t border-border p-3">
+      <div className="flex items-center gap-2 rounded-lg bg-secondary/40 p-2">
+        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-gold/30 bg-gold/10 text-xs font-bold text-gold">
+          {initial}
+        </div>
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-xs font-semibold">{name}</p>
+          <p className="truncate text-[10px] text-muted-foreground">
+            {role}
+            {mode === "guest" && " · demo"}
+          </p>
+        </div>
+        <button onClick={handleSignOut} title="Sign out" className="text-muted-foreground hover:text-destructive">
+          <LogOut className="h-4 w-4" />
+        </button>
+      </div>
+    </div>
   );
 }

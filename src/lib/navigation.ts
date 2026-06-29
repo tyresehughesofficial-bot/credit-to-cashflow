@@ -471,6 +471,12 @@ export const NAV_SECTIONS: NavSection[] = [
     defaultOpen: false,
     items: [
       {
+        label: "Team OS",
+        href: "/team",
+        icon: Users2,
+        description: "Roles, ownership, weekly rhythm, and KPIs.",
+      },
+      {
         label: "Logs",
         href: "/logs",
         icon: ScrollText,
