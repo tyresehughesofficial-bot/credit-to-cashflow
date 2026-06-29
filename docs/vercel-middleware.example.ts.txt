@@ -1,0 +1,55 @@
+// ============================================================================
+// REAL server-side auth middleware — VERCEL-ONLY.
+// ----------------------------------------------------------------------------
+// This is NOT active in the repo. Next.js forbids middleware in a static export
+// (`output: export`), which is the GitHub Pages build — so committing it as
+// `src/middleware.ts` would BREAK Pages. Activate it only when you run a
+// Vercel-only deployment (drop the static Pages workflow), by copying this to
+// `src/middleware.ts`.
+//
+// It also requires switching auth to COOKIE-based sessions so the server can
+// read them (the app currently uses localStorage via supabase-js). Steps:
+//   1) npm i @supabase/ssr   (already installed)
+//   2) Sign in through a createBrowserClient (cookies) instead of the
+//      localStorage authClient in src/lib/auth/client.ts.
+//   3) Set a `tt_guest=1` cookie in continueAsGuest so the preview still works.
+//   4) Copy this file to src/middleware.ts.
+//
+// Until then, the app is protected by the client AuthGate + RLS + 2FA.
+// ============================================================================
+
+import { createServerClient } from "@supabase/ssr";
+import { NextResponse, type NextRequest } from "next/server";
+
+const PUBLIC = ["/login"];
+
+export async function middleware(req: NextRequest) {
+  const res = NextResponse.next();
+  const path = req.nextUrl.pathname;
+
+  // Allow the login page, Next internals, and guest sessions.
+  if (PUBLIC.some((p) => path.startsWith(p)) || req.cookies.get("tt_guest")?.value === "1") return res;
+
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll: () => req.cookies.getAll(),
+        setAll: (cookies) => cookies.forEach(({ name, value, options }) => res.cookies.set(name, value, options)),
+      },
+    },
+  );
+
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    const url = req.nextUrl.clone();
+    url.pathname = "/login";
+    return NextResponse.redirect(url);
+  }
+  return res;
+}
+
+export const config = {
+  matcher: ["/((?!_next/static|_next/image|favicon.ico|login|.*\\.(?:png|jpg|svg|ico)).*)"],
+};

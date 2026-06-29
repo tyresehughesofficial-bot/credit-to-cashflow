@@ -10,12 +10,24 @@ const isPages = process.env.PAGES_EXPORT === "true";
 const isVercel = process.env.VERCEL === "1";
 const repo = "credit-to-cashflow";
 
+const securityHeaders = [
+  { key: "X-Frame-Options", value: "SAMEORIGIN" },
+  { key: "X-Content-Type-Options", value: "nosniff" },
+  { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+  { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" },
+  { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains; preload" },
+];
+
 const nextConfig = {
   reactStrictMode: true,
   eslint: {
     // Lint is run separately in CI; don't block production builds on it.
     ignoreDuringBuilds: true,
   },
+  // Server-side security headers (Vercel / Node host; ignored on static export).
+  ...(isPages
+    ? {}
+    : { async headers() { return [{ source: "/:path*", headers: securityHeaders }]; } }),
   ...(isPages
     ? {
         output: "export",

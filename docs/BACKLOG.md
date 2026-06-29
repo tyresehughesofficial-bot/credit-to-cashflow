@@ -51,5 +51,5 @@ Status: 🔴 not started · 🟡 partial · ✅ done. Cross-ref: `SYSTEM_AUDIT.m
 
 ## Blocked — cannot be completed by me
 - 🔴 MyFreeScoreNow live report pull — needs the real API endpoint URL from your Secure API Control.
-- 🟡 Server-side route middleware — needs Vercel-ONLY (Next forbids middleware/API routes in static export, which is the primary Pages deploy). Client AuthGate + RLS + 2FA cover security today; true server middleware = cookie-session refactor on a Vercel-only setup.
-- 🟡 Stripe — stripe-checkout Edge Function + lib/stripe + CRM 'Create payment link' built (graceful fallback). Needs STRIPE_SECRET_KEY secret to generate live links. TODO: webhook to auto-mark paid.
+- 🟡 Server-side route middleware — ready-to-activate code at docs/vercel-middleware.example.ts.txt (Vercel-only; needs cookie sessions). Vercel security headers shipped (next.config). Client AuthGate + RLS + 2FA cover security today.
+- 🟡 Stripe — stripe-checkout + lib/stripe + CRM 'Create payment link' + **stripe-webhook (auto-mark paid via metadata.payment_id)**. Needs STRIPE_SECRET_KEY + STRIPE_WEBHOOK_SECRET. Live once secrets set.

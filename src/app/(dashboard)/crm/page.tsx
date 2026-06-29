@@ -88,9 +88,11 @@ export default function CRMPage() {
     setPayBusy(true);
     setPayMsg(null);
     const c = contacts.records.find((x) => x.name === pay.contact);
-    const res = await createPaymentLink({ amount: amt, description: `Triad T — ${pay.contact}`, email: c?.email });
+    // Create the row first so its id links the Stripe session (webhook → paid).
+    const row = payments.add({ contact: pay.contact, amount: amt, method: "link", status: "pending", link: "", date: new Date().toISOString().slice(0, 10) } as Omit<Payment, "id">);
+    const res = await createPaymentLink({ amount: amt, description: `Triad T — ${pay.contact}`, email: c?.email, paymentId: row.id });
     setPayBusy(false);
-    payments.add({ contact: pay.contact, amount: amt, method: "link", status: "pending", link: res.url ?? "", date: new Date().toISOString().slice(0, 10) } as Omit<Payment, "id">);
+    if (res.url) payments.update(row.id, { link: res.url });
     setPayMsg(res.ok ? `Live payment link created — ${res.url}` : "Recorded as pending. Set STRIPE_SECRET_KEY to generate a live checkout link.");
     setPay({ contact: "", amount: "" });
   }

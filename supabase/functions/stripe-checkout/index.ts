@@ -18,7 +18,7 @@ const ENV = (k: string) => Deno.env.get(k) ?? Deno.env.get(k.toUpperCase()) ?? D
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: cors });
   try {
-    const { amount, description, email, successUrl, cancelUrl } = await req.json().catch(() => ({}));
+    const { amount, description, email, paymentId, successUrl, cancelUrl } = await req.json().catch(() => ({}));
     const dollars = Number(amount);
     if (!dollars || dollars <= 0) return json({ ok: false, error: "Invalid amount" }, 400);
 
@@ -34,6 +34,8 @@ Deno.serve(async (req) => {
     form.set("line_items[0][price_data][unit_amount]", String(Math.round(dollars * 100)));
     form.set("line_items[0][price_data][product_data][name]", description || "Triad T payment");
     if (email) form.set("customer_email", email);
+    // Link to the crm_payments row so the webhook can mark it paid.
+    if (paymentId) form.set("metadata[payment_id]", String(paymentId));
 
     const res = await fetch("https://api.stripe.com/v1/checkout/sessions", {
       method: "POST",

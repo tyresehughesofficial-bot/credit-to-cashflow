@@ -14,7 +14,7 @@ export interface PaymentLinkResult {
   reason?: string;
 }
 
-export async function createPaymentLink(input: { amount: number; description: string; email?: string }): Promise<PaymentLinkResult> {
+export async function createPaymentLink(input: { amount: number; description: string; email?: string; paymentId?: string }): Promise<PaymentLinkResult> {
   if (!isSupabaseConfigured) return { ok: false, reason: "no_backend" };
   const sb = createClient();
   if (!sb) return { ok: false, reason: "no_client" };
