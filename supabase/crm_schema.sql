@@ -39,12 +39,33 @@ create table if not exists crm_bookings (
   date        text
 );
 
+create table if not exists crm_deals (
+  id          uuid primary key default gen_random_uuid(),
+  created_at  timestamptz default now(),
+  name        text,
+  contact     text,
+  offer       text,
+  amount      numeric default 0,
+  status      text default 'open'           -- open | won | lost
+);
+
+create table if not exists crm_payments (
+  id          uuid primary key default gen_random_uuid(),
+  created_at  timestamptz default now(),
+  contact     text,
+  amount      numeric default 0,
+  method      text,                          -- card | ach | cash | link
+  status      text default 'pending',        -- pending | paid | refunded
+  link        text,
+  date        text
+);
+
 create index if not exists idx_crm_contacts_stage on crm_contacts (stage);
 
 do $$
 declare t text;
 begin
-  foreach t in array array['crm_contacts','crm_activities','crm_bookings'] loop
+  foreach t in array array['crm_contacts','crm_activities','crm_bookings','crm_deals','crm_payments'] loop
     execute format('alter table %I enable row level security;', t);
     execute format('drop policy if exists staff_all on %I; create policy staff_all on %I for all using (true) with check (true);', t, t);
   end loop;
