@@ -8,7 +8,7 @@ Status: 🔴 not started · 🟡 partial · ✅ done. Cross-ref: `SYSTEM_AUDIT.m
 ---
 
 ## Foundation / cross-cutting
-- 🟡 **Real AI** — `generate-text` fn + `aiText()` + `<AIPanel>`; wired into Prolific Strategist, Content Engine, Script Writer, SOP Generator, CFPB/writing tools. TODO: knowledge-vault RAG answers (embed user docs), credit-diagnosis second opinion, intelligence scoring.
+- ✅ **Real AI** — `generate-text` + `aiText()` + `<AIPanel>` wired into Prolific Strategist, Content Engine, Script Writer, SOP Generator, writing tools, **credit-diagnosis Second Opinion**, and **Knowledge Vault real RAG** (Claude grounded in retrieved source summaries, deterministic fallback). TODO (optional): vector embeddings for retrieval (pgvector + embeddings API); intelligence scoring AI.
 - 🟡 **Persistence** — confirm/apply ALL Supabase schemas in the live project (only Credit + MFSN + Prolific + auth so far). Tighten RLS from `using(true)` to `auth.uid()` org-membership once auth is live.
 - 🟡 **Auth (W2)** — see Auth section below for what's scaffolded vs deferred.
 - 🔴 **MyFreeScoreNow live report pull** — blocked on the real API endpoint (token model confirmed; endpoint URL still needed). CSV roster import works today.
@@ -33,7 +33,7 @@ Status: 🔴 not started · 🟡 partial · ✅ done. Cross-ref: `SYSTEM_AUDIT.m
 - ✅ Sales: Objection Handling, SMS/Email Templates, Consultation Scripts — built (template libraries).
 - ✅ Analytics: Content/Lead/Revenue Analytics — built (metrics + charts).
 - ✅ Content Ops: News & Trend Center — built.
-- 🟡 Automations, Scheduled Tasks, Workflow Builder (Runner) — built as functional UIs; live execution engine still TODO.
+- 🟡 Automations, Scheduled Tasks, Workflow Builder (Runner) — UIs + manual 'Run now' + **run-automations Edge Function (scheduler seam, pg_cron)** done. TODO: event-driven DB triggers (new-lead webhook), Workflow Builder live execution.
 - ✅ System: Settings, Profile, Integrations, Logs — built. (Integrations: GHL connect pending W6.)
 
 ## New V2 modules to build
@@ -48,3 +48,8 @@ Status: 🔴 not started · 🟡 partial · ✅ done. Cross-ref: `SYSTEM_AUDIT.m
 - 🟡 Several pages still use static `lib/data/mock` (command-center, content-engine, disputes, hooks, sales, script-writer) — migrate to live collections.
 - 🟡 Command Center dashboard metrics not computed from live client/credit data; no alerts.
 - 🟡 `intelligence/bureaus` + `intelligence/cfpb` overlap `/bureaus` + `/cfpb` — consider merge.
+
+## Blocked — cannot be completed by me
+- 🔴 MyFreeScoreNow live report pull — needs the real API endpoint URL from your Secure API Control.
+- 🔴 Server-side route middleware + 2FA TOTP — need the Node-server host (not static Pages).
+- 🔴 Live Stripe charging — needs Stripe keys + checkout; payment tracking + link field already built.

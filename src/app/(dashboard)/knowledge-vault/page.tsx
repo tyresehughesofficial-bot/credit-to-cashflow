@@ -23,6 +23,7 @@ import { SectionLabel, Stat } from "@/components/intelligence/bits";
 import { useCollection, type Row } from "@/lib/db/use-collection";
 import { AGENTS, AGENT_BY_ID, DOCUMENTS } from "@/lib/vault/data";
 import { answerQuery, chunkText, type VaultAnswer } from "@/lib/vault/engine";
+import { aiText } from "@/lib/ai";
 import type { AgentId, KnowledgeDoc } from "@/lib/vault/types";
 
 const COLLECTION = "knowledge_documents";
@@ -56,6 +57,7 @@ export default function KnowledgeVault() {
 
   const [query, setQuery] = useState("");
   const [answer, setAnswer] = useState<VaultAnswer | null>(null);
+  const [rag, setRag] = useState<{ loading: boolean; text: string | null }>({ loading: false, text: null });
   const [filter, setFilter] = useState<AgentId | "all">("all");
   const [showIngest, setShowIngest] = useState(false);
 
@@ -83,8 +85,23 @@ export default function KnowledgeVault() {
     const text = q.trim();
     if (!text) return;
     setQuery(text);
-    setAnswer(answerQuery(text, docs));
+    const a = answerQuery(text, docs);
+    setAnswer(a);
     if (typeof window !== "undefined") window.scrollTo({ top: 0, behavior: "smooth" });
+    void runRag(text, a);
+  }
+
+  // Real RAG: ground Claude in the retrieved source summaries; fall back to the
+  // deterministic draft when AI is unavailable.
+  async function runRag(question: string, a: VaultAnswer) {
+    setRag({ loading: true, text: null });
+    const context = a.sources.map((s, i) => `[${i + 1}] ${s.doc.title}\n${s.doc.summary}`).join("\n\n");
+    const text = await aiText({
+      system: `You are the ${a.agentName} for Triad T Enterprise. Answer ONLY from the provided context. Cite sources as [n]. If the context is insufficient, say so and state what's missing. Be concise and compliant (FCRA/FDCPA).`,
+      prompt: `Context:\n${context || "(no documents retrieved)"}\n\nQuestion: ${question}\n\nAnswer grounded in the context, citing [n]:`,
+      maxTokens: 600,
+    });
+    setRag({ loading: false, text });
   }
 
   return (
@@ -146,8 +163,23 @@ export default function KnowledgeVault() {
                   {Math.round(answer.confidence * 100)}% confidence
                 </span>
               </div>
+              {/* Real RAG answer (Claude grounded in retrieved sources) */}
+              {(rag.loading || rag.text) && (
+                <div className="mt-3 rounded-lg border border-gold/30 bg-gold/5 p-3">
+                  <p className="mb-1 flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wide text-gold">
+                    <Bot className="h-3 w-3" /> AI Answer · grounded RAG
+                  </p>
+                  {rag.loading ? (
+                    <p className="text-[12px] text-muted-foreground">Generating from retrieved sources…</p>
+                  ) : (
+                    <p className="whitespace-pre-wrap text-[13px] leading-relaxed">{rag.text}</p>
+                  )}
+                </div>
+              )}
+
               <p className="mt-3 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
                 {answer.draftTitle}
+                {!rag.loading && !rag.text && <span className="ml-1 normal-case text-muted-foreground/70">· deterministic (AI offline)</span>}
               </p>
               <p className="mt-1 whitespace-pre-wrap text-[13px] leading-relaxed">{answer.draft}</p>
             </div>

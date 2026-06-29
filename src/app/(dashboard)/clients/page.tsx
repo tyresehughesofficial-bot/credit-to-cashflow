@@ -68,6 +68,7 @@ import {
   fundingReadiness,
 } from "@/lib/credit/engine";
 import { importClient, importAllClients, importMemberListCSV, type ImportResult } from "@/lib/credit/myfreescorenow";
+import { AIPanel } from "@/components/ai/ai-panel";
 
 const inputCls =
   "w-full rounded-md border border-border bg-background px-2.5 py-2 text-sm text-foreground outline-none focus:border-gold/50";
@@ -506,6 +507,14 @@ function ClientDetail({
               ))}
             </ul>
           </div>
+
+          <AIPanel
+            title="AI Second Opinion"
+            cta="Get AI analysis"
+            system="You are a senior credit analyst. Give a concise second opinion: confirm or challenge the diagnosis and name the single highest-leverage next move."
+            prompt={`Diagnosis: ${diag.summary}\nBand: ${diag.healthBand} (${diag.healthScore}/100)\nProblems: ${diag.problems.join("; ")}\n\nGive a 3-4 sentence second opinion and the #1 priority action.`}
+            fallback={`Deterministic read: ${diag.summary} Priority: ${diag.priority}.`}
+          />
         </TabsContent>
 
         {/* PROFILE */}
