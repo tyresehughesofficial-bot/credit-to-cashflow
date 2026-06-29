@@ -88,6 +88,12 @@ export const NAV_SECTIONS: NavSection[] = [
         description: "Daily content, lead, client & revenue metrics at a glance.",
       },
       {
+        label: "The Prolific Method",
+        href: "/prolific",
+        icon: Workflow,
+        description: "Diagnose → Repair → Rebuild → Structure → Position → Fund → Grow.",
+      },
+      {
         label: "Knowledge Vault",
         href: "/knowledge-vault",
         icon: Library,

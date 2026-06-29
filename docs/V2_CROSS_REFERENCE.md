@@ -145,6 +145,10 @@ TRIAD T AI COMMAND CENTER (V2)
 ---
 
 ## 8. Open Decisions (need your call)
-1. **App vs GHL boundary** — confirm the app does NOT replace GHL's CRM/automation (recommended), only integrates/mirrors.
+1. **App vs GHL boundary** — ✅ DECIDED: the **app replaces GoHighLevel** too. CRM, pipelines, SMS/email automation, booking, and payment links become in-app modules (added to a later wave). JotForm/contracts still external for e-sign.
 2. **SOPs/Training/IP** — host inside **Knowledge Vault** (recommended, reuses RAG/agents) vs separate modules.
-3. **Start point** — recommended **W1: Prolific Method engine** (flagship, max reuse). Alternative: W2 Auth foundation first.
+3. **Start point** — ✅ DECIDED: **W1 — Prolific Method engine** (flagship, max reuse). Building now.
+
+## 9. CRM build (consequence of "app replaces GHL")
+Added to the roadmap (target W6–W7, after the spine + offers):
+`crm_contacts · pipelines · pipeline_stages · deals · activities · bookings · message_templates · automations · payments`. Mirrors the 10-stage GHL pipeline (New Lead → … → Upsell). This is a large surface — sequenced after the revenue-critical W1–W5 so the client-transformation engine ships first.
