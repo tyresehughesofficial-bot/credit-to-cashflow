@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Workflow, Check, ChevronRight, Sparkles, Target } from "lucide-react";
+import { Workflow, Check, ChevronRight, Sparkles, Target, FileText, Copy, CheckCheck } from "lucide-react";
 
 import { PageHeader } from "@/components/shared/page-header";
 import { Badge } from "@/components/ui/badge";
@@ -22,6 +22,7 @@ import {
   NEGATIVE_SEED,
   INQUIRY_SEED,
   UTILIZATION_SEED,
+  PERSONAL_INFO_SEED,
 } from "@/lib/credit/data";
 import {
   type Client,
@@ -29,6 +30,7 @@ import {
   type NegativeAccount,
   type Inquiry,
   type CreditUtilization,
+  type PersonalInformation,
   fullName,
 } from "@/lib/credit/types";
 import { diagnose, fundingReadiness } from "@/lib/credit/engine";
@@ -36,6 +38,7 @@ import { diagnose, fundingReadiness } from "@/lib/credit/engine";
 import { INTAKE_QUESTIONS, PHASES } from "@/lib/prolific/data";
 import { PHASE_ORDER, type Journey, type Phase } from "@/lib/prolific/types";
 import { placePhase, buildPlan, nextMove, signalsFromCredit } from "@/lib/prolific/engine";
+import { phaseArtifact, type ArtifactBlock } from "@/lib/prolific/artifacts";
 
 const PILLAR_CLASS: Record<string, string> = {
   Credit: "text-sky-300",
@@ -50,35 +53,57 @@ export default function ProlificMethodPage() {
   const negatives = useCollection<NegativeAccount & Row>("negative_accounts", NEGATIVE_SEED as (NegativeAccount & Row)[]);
   const inquiries = useCollection<Inquiry & Row>("inquiries", INQUIRY_SEED as (Inquiry & Row)[]);
   const utilization = useCollection<CreditUtilization & Row>("credit_utilization", UTILIZATION_SEED as (CreditUtilization & Row)[]);
+  const personalInfo = useCollection<PersonalInformation & Row>("personal_information", PERSONAL_INFO_SEED as (PersonalInformation & Row)[]);
   const journeys = useCollection<Journey & Row>("prolific_journeys", []);
 
   const [selectedId, setSelectedId] = useState<string | null>(CLIENT_SEED[0]?.id ?? null);
   const client = clients.records.find((c) => c.id === selectedId) ?? null;
   const journey = journeys.records.find((j) => j.clientId === selectedId) ?? null;
+  const intake = journey?.intake ?? {};
+  const goal = intake.goal ?? "";
 
-  // Real credit signals from the client's imported data.
-  const signals = useMemo(() => {
-    if (!client) return undefined;
+  // Real credit context from the client's imported data (reused for signals + artifacts).
+  const credit = useMemo(() => {
+    if (!client) return null;
     const report = reports.records.find((r) => r.clientId === client.id);
     const negs = negatives.records.filter((n) => n.clientId === client.id);
     const qs = inquiries.records.filter((q) => q.clientId === client.id);
     const util = utilization.records.find((u) => u.clientId === client.id);
-    if (!report) return signalsFromCredit(null, null, false);
-    const diag = diagnose(report, negs, qs);
+    const addr = personalInfo.records.find((p) => p.clientId === client.id && p.infoType === "address" && p.status === "current");
+    if (!report) return { diagnosis: null, funding: null, negs, qs, util, address: addr?.value };
+    const diagnosis = diagnose(report, negs, qs);
     const avg = Math.round(
       [report.experianScore, report.equifaxScore, report.transunionScore]
         .filter((n): n is number => !!n)
         .reduce((a, b, _, arr) => a + b / arr.length, 0),
     );
     const funding = fundingReadiness(avg, util?.utilizationPct, qs.length, negs);
-    return signalsFromCredit(diag, funding, true);
-  }, [client, reports.records, negatives.records, inquiries.records, utilization.records]);
+    return { diagnosis, funding, negs, qs, util, address: addr?.value };
+  }, [client, reports.records, negatives.records, inquiries.records, utilization.records, personalInfo.records]);
 
-  const intake = journey?.intake ?? {};
+  const signals = useMemo(
+    () => (credit ? signalsFromCredit(credit.diagnosis, credit.funding, !!credit.diagnosis) : undefined),
+    [credit],
+  );
+
   const autoPhase = useMemo(() => placePhase(intake, signals), [intake, signals]);
   const currentPhase: Phase = (journey?.manualPhase as Phase) || autoPhase;
   const plan = useMemo(() => buildPlan(currentPhase), [currentPhase]);
-  const goal = intake.goal ?? "";
+
+  const artifact = useMemo(() => {
+    if (!client || !credit) return null;
+    return phaseArtifact(currentPhase, {
+      firstName: client.firstName,
+      lastName: client.lastName,
+      address: credit.address,
+      goal,
+      negatives: credit.negs,
+      inquiries: credit.qs,
+      utilization: credit.util,
+      diagnosis: credit.diagnosis,
+      funding: credit.funding,
+    });
+  }, [client, credit, currentPhase, goal]);
 
   const completed = journey?.completedSteps ?? [];
   const totalSteps = plan.reduce((n, p) => n + p.steps.length, 0);
@@ -277,6 +302,9 @@ export default function ProlificMethodPage() {
             </div>
           </div>
 
+          {/* Phase deliverable (generated artifact) */}
+          {artifact && <ArtifactSection artifact={artifact} />}
+
           {/* Full plan across all phases */}
           <div>
             <p className="mb-3 text-sm font-semibold">Full Transformation Plan</p>
@@ -315,6 +343,80 @@ export default function ProlificMethodPage() {
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+/* ───────────────────────── Artifact rendering ───────────────────────── */
+
+function CopyButton({ text }: { text: string }) {
+  const [done, setDone] = useState(false);
+  return (
+    <button
+      onClick={() => {
+        navigator.clipboard?.writeText(text).then(
+          () => {
+            setDone(true);
+            setTimeout(() => setDone(false), 1500);
+          },
+          () => {},
+        );
+      }}
+      className="inline-flex items-center gap-1 rounded-md border border-border px-2 py-1 text-[11px] text-muted-foreground hover:text-gold"
+    >
+      {done ? <CheckCheck className="h-3 w-3 text-success" /> : <Copy className="h-3 w-3" />}
+      {done ? "Copied" : "Copy"}
+    </button>
+  );
+}
+
+function ArtifactSection({ artifact }: { artifact: { title: string; intro: string; blocks: ArtifactBlock[] } }) {
+  return (
+    <div className="rounded-xl border border-gold/30 bg-card p-4">
+      <div className="mb-1 flex items-center gap-2">
+        <FileText className="h-4 w-4 text-gold" />
+        <p className="text-sm font-semibold">{artifact.title}</p>
+        <span className="rounded-full bg-gold/15 px-2 py-0.5 text-[10px] font-semibold text-gold">Generated</span>
+      </div>
+      <p className="mb-3 text-xs text-muted-foreground">{artifact.intro}</p>
+      <div className="space-y-3">
+        {artifact.blocks.map((b, i) => {
+          if (b.type === "letter") {
+            return (
+              <div key={i} className="rounded-lg border border-border bg-background/40">
+                <div className="flex items-center justify-between border-b border-border px-3 py-2">
+                  <p className="text-xs font-semibold">{b.subject}</p>
+                  <CopyButton text={b.body} />
+                </div>
+                <pre className="max-h-72 overflow-auto whitespace-pre-wrap px-3 py-2 text-[11px] leading-relaxed text-foreground/90">
+                  {b.body}
+                </pre>
+              </div>
+            );
+          }
+          if (b.type === "list") {
+            return (
+              <div key={i}>
+                <p className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-gold">{b.title}</p>
+                <ul className="space-y-1">
+                  {b.items.map((it, j) => (
+                    <li key={j} className="flex items-start gap-1.5 text-sm text-foreground/90">
+                      <ChevronRight className="mt-0.5 h-3 w-3 shrink-0 text-gold" />
+                      {it}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            );
+          }
+          return (
+            <div key={i}>
+              {b.title && <p className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-gold">{b.title}</p>}
+              <p className="text-sm text-foreground/90">{b.body}</p>
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }
