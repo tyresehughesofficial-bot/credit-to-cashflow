@@ -13,6 +13,50 @@ export const SOP_CATEGORIES = ["Onboarding", "Credit", "Funding", "Structure", "
 
 export const SOP_SEED: SOP[] = [
   {
+    id: "sop-credit-journey",
+    title: "Credit Repair & Building — full client journey",
+    category: "Credit",
+    owner: "Credit Specialist",
+    steps:
+      "1. Intake: Client Command Center → Import Client (MyFreeScoreNow CSV or manual).\n" +
+      "2. Diagnose: Diagnosis tab — read health band, problems, AI recommendations.\n" +
+      "3. Place: The Prolific Method → pick client → auto-places in Repair/Rebuild; read AI Strategist.\n" +
+      "4. Round 1: Prolific generates dispute letters (one per bureau) — Copy, send certified, log in Round Tracking.\n" +
+      "5. Track: Negative Account Tracking — update each item status (open → disputing → deleted).\n" +
+      "6. Escalate: CFPB Center for anything 'verified' without proof; move to Round 2/3.\n" +
+      "7. Rebuild: builder accounts, utilization < 10%, add positive tradelines.\n" +
+      "Done when: scores reach Good/Excellent and utilization is low → ready for Funding.",
+    version: "1.0",
+  },
+  {
+    id: "sop-business-funding",
+    title: "Business Funding — readiness to capital",
+    category: "Funding",
+    owner: "Credit Specialist",
+    steps:
+      "1. Check readiness: Approval Readiness — work the 'Almost Ready' list (score 640+, util ≤30%, ≤4 inquiries, 0 derogatories).\n" +
+      "2. Structure: Prolific Method → Structure phase → Business-in-a-Box checklist (LLC, EIN, address, bank, docs).\n" +
+      "3. Position: Prolific → Position phase — freeze inquiries, bank relationships, align personal+business credit.\n" +
+      "4. Execute: Funding Engine + Fund phase — stack 0% business cards same-day → lines → loans.\n" +
+      "5. Track money: log funding fee in Finance · Wealth Map; log deal in CRM → Deals.\n" +
+      "Done when: capital approved → move client to Grow.",
+    version: "1.0",
+  },
+  {
+    id: "sop-run-company",
+    title: "Running the Company — daily / weekly operations",
+    category: "Operations",
+    owner: "Administrator",
+    steps:
+      "DAILY: Open Command Center → work the Alerts panel (urgent clients, funding-ready, pending payments).\n" +
+      "SALES: CRM → Pipeline — move every lead through the 10 stages; Send & log follow-ups; Create payment link to close.\n" +
+      "MONEY (weekly): Finance · Wealth Map — log revenue/expenses/payouts; watch net profit + top offers; pay affiliates.\n" +
+      "TEAM: Team OS — Mon alignment, Wed training, Fri review; each person has a role + KPIs.\n" +
+      "QUESTIONS: Operations Hub — SOP Library, Training Hub, Contracts, IP Library.\n" +
+      "AUTOMATIONS: set trigger→action rules; scheduler runs them every 15 min.",
+    version: "1.0",
+  },
+  {
     id: "sop-onboard",
     title: "Onboard a credit repair client",
     category: "Onboarding",
