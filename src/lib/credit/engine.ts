@@ -243,6 +243,28 @@ export function fundingReadiness(
   return { band, score, factors, recommendedPath };
 }
 
+/** Recommended dispute reason for a negative-account type. */
+export function disputeReason(type: string): string {
+  const map: Record<string, string> = {
+    collection: "Debt not validated — demand validation, dispute as unverified.",
+    charge_off: "Inaccurate balance/status — demand original contract.",
+    repossession: "Challenge deficiency balance + notice of sale.",
+    late_payment: "Dispute inaccurate payment history; goodwill request.",
+    medical: "Sub-$500 / paid medical — removable under current policy.",
+    public_record: "Bureaus can't verify with the court — dispute the source.",
+    bankruptcy: "Courts don't report to bureaus — verification impossible.",
+  };
+  return map[type] ?? "Dispute as inaccurate/unverifiable.";
+}
+
+/** Dispute priority for a negative-account type. */
+export function negativePriority(type: string): PriorityLevel {
+  if (type === "repossession" || type === "public_record" || type === "bankruptcy") return "Critical";
+  if (type === "charge_off" || type === "collection") return "High";
+  if (type === "medical" || type === "late_payment") return "Medium";
+  return "Low";
+}
+
 /* ── Live-AI seam (future) ────────────────────────────────────────────────────
  * When the `credit-analyze` Supabase Edge Function is deployed (Claude as the
  * reasoning engine), this is where the call goes. Until then the deterministic

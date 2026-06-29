@@ -53,6 +53,7 @@ import {
   Cog,
   CircleUser,
   Plug,
+  Package,
   type LucideIcon,
 } from "lucide-react";
 
@@ -92,6 +93,12 @@ export const NAV_SECTIONS: NavSection[] = [
         href: "/prolific",
         icon: Workflow,
         description: "Diagnose → Repair → Rebuild → Structure → Position → Fund → Grow.",
+      },
+      {
+        label: "Offers & Products",
+        href: "/offers",
+        icon: Package,
+        description: "Offer catalog — promise, price, deliverables, contract, upsell.",
       },
       {
         label: "Knowledge Vault",

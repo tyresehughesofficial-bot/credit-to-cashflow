@@ -27,8 +27,8 @@ Status: 🔴 not started · 🟡 partial · ✅ done. Cross-ref: `SYSTEM_AUDIT.m
 - 🟡 **Weekly workflow automation** — Team OS shows the Mon/Wed/Fri rhythm; recurring task automation deferred to Automations wave.
 
 ## Stubs still to build (from SYSTEM_AUDIT)
-- 🔴 Credit/Client: Round Tracking, Negative Tracking, CFPB Center, Client Profiles.
-- 🔴 Funding: Approval Readiness (engine exists — just wire), Business Funding, Personal Funding.
+- ✅ Round Tracking, Negative Tracking, CFPB Center — built (W3). 🔴 Client Profiles still stub.
+- ✅ Approval Readiness — built (W3). 🔴 Business Funding, Personal Funding still stub.
 - 🔴 Writing: Caption Builder, Description Builder, CTA Generator (logic in `lib/generators`).
 - 🔴 Sales: Objection Handling, SMS/Email Templates, Consultation Scripts.
 - 🔴 Analytics: Content/Lead/Revenue Analytics.
@@ -37,7 +37,7 @@ Status: 🔴 not started · 🟡 partial · ✅ done. Cross-ref: `SYSTEM_AUDIT.m
 - 🔴 System: Settings, Profile, Integrations (GHL), Logs.
 
 ## New V2 modules to build
-- 🔴 Offers & Products catalog (+ Business-in-a-Box, Credit Building offers).
+- ✅ Offers & Products catalog — built (W3). 🔴 Per-offer fulfillment pages + Business-in-a-Box tracker still to build.
 - 🔴 Affiliate System (tiers, commissions, onboarding, leaderboard, payouts).
 - 🔴 Finance / Wealth Map (revenue/expenses/payouts/AR/AP + offer performance).
 - 🔴 SOP Library + Training Hub + IP Library (fold into Knowledge Vault).
