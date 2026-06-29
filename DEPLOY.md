@@ -42,3 +42,37 @@ To switch from demo data to live Supabase data + AI generation, add these in
 
 The app detects whether Supabase is configured and shows a **Demo mode** badge until you
 add these — so it's safe to deploy first and wire data later.
+
+---
+
+## Running as a real Node server (Vercel / Docker / VPS)
+
+The same code deploys three ways (see `next.config.mjs`):
+
+| Host | How | Server features |
+|------|-----|-----------------|
+| **Vercel** | Import repo → Deploy (auto-detected) | ✅ API routes, middleware, SSR |
+| **Docker / VPS** | `npm run build:node` → `npm run start:node` (see `NODE.md`) | ✅ same, self-hosted |
+| **GitHub Pages** | `npm run build:pages` (CI does this) | ❌ static only |
+
+### Environment variables (Vercel → Project → Settings → Environment Variables)
+Public (safe in the browser):
+```
+NEXT_PUBLIC_SUPABASE_URL=https://<ref>.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=sb_publishable_...
+```
+The app runs in demo mode without these. Server-side secrets (AI, messaging,
+MyFreeScoreNow) stay in **Supabase Edge Function secrets**, not here.
+
+### What the Node host unlocks (vs. static GitHub Pages)
+Deploying to Vercel/Docker makes these previously host-blocked items *possible*
+(see `docs/BACKLOG.md`):
+- **API routes** — `src/app/api/<name>/route.ts` with server-side secrets.
+- **Server-side auth middleware** — `src/middleware.ts` guarding routes (requires
+  switching to cookie-based Supabase sessions via `@supabase/ssr`).
+- **2FA / TOTP** — Supabase MFA enrollment (works client-side too, but cleaner
+  with server sessions).
+- **Cron / scheduled jobs** — Vercel Cron to invoke `run-automations`.
+
+> The current client-side auth + RLS keep things secure on either host; the
+> above are upgrades the Node host enables, not requirements.

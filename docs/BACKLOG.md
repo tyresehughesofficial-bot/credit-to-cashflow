@@ -45,11 +45,11 @@ Status: 🔴 not started · 🟡 partial · ✅ done. Cross-ref: `SYSTEM_AUDIT.m
 - 🟡 **CRM (app replaces GHL)** — built (W6+): contacts, 10-stage pipeline, deals, payments, activity, bookings, real SMS/email send (send-message fn, Twilio/SendGrid) with simulated fallback, manual automation execution. TODO: drag-drop, live Stripe charging, scheduled/event automation (backend cron), GHL data import.
 
 ## Known polish / tech debt
-- 🟡 Several pages still use static `lib/data/mock` (command-center, content-engine, disputes, hooks, sales, script-writer) — migrate to live collections.
-- 🟡 Command Center dashboard metrics not computed from live client/credit data; no alerts.
+- 🟡 Mock data: ✅ Command Center now LIVE (KPIs/alerts/bureau avgs/revenue from real collections). Remaining mock usage (content-engine, disputes, hooks, sales, script-writer) is legitimate tool seed-content, not stale dashboards.
+- ✅ Command Center — live metrics + alerts (needs-attention, funding-ready, pending payments) wired.
 - 🟡 `intelligence/bureaus` + `intelligence/cfpb` overlap `/bureaus` + `/cfpb` — consider merge.
 
 ## Blocked — cannot be completed by me
 - 🔴 MyFreeScoreNow live report pull — needs the real API endpoint URL from your Secure API Control.
-- 🔴 Server-side route middleware + 2FA TOTP — need the Node-server host (not static Pages).
+- 🟡 Server-side route middleware + 2FA TOTP — UNBLOCKED by the Node host (Vercel/Docker config added). Implementation pending: cookie-based Supabase sessions (@supabase/ssr) for middleware; Supabase MFA for 2FA.
 - 🔴 Live Stripe charging — needs Stripe keys + checkout; payment tracking + link field already built.
