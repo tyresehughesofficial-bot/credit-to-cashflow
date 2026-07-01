@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Loader2, ShieldCheck, ArrowRight } from "lucide-react";
+import { Loader2, ArrowRight } from "lucide-react";
 
 import { authConfigured } from "@/lib/auth/client";
 import { useAuth } from "@/lib/auth/use-auth";
@@ -10,6 +10,9 @@ import { cn } from "@/lib/utils";
 
 const input =
   "w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-gold/50";
+
+// Base path prefix (set to /credit-to-cashflow on the GitHub Pages build).
+const BASE = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
 
 export default function LoginPage() {
   const { isAuthed, signIn, signUp, continueAsGuest } = useAuth();
@@ -41,9 +44,21 @@ export default function LoginPage() {
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="w-full max-w-sm">
         <div className="mb-6 text-center">
-          <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl border border-gold/30 bg-gold/10 text-gold">
-            <ShieldCheck className="h-6 w-6" />
-          </div>
+          {/* Logo — uses your gold logo (triad-t-login-logo.png) when present,
+              otherwise falls back to the existing brand mark. */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={`${BASE}/brand/triad-t-login-logo.png`}
+            onError={(e) => {
+              const el = e.currentTarget;
+              if (!el.dataset.fallback) {
+                el.dataset.fallback = "1";
+                el.src = `${BASE}/brand/tte-mark.png`;
+              }
+            }}
+            alt="Triad T Enterprise"
+            className="mx-auto mb-4 h-40 w-auto object-contain drop-shadow-[0_0_28px_rgba(212,175,55,0.28)]"
+          />
           <h1 className="text-xl font-bold tracking-tight">Triad T AI Command Center</h1>
           <p className="mt-1 text-sm text-muted-foreground">
             {mode === "signin" ? "Sign in to your workspace" : "Create your account"}
