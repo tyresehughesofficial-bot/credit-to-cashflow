@@ -57,7 +57,7 @@ export default function LoginPage() {
               }
             }}
             alt="Triad T Enterprise"
-            className="mx-auto mb-4 h-40 w-auto object-contain drop-shadow-[0_0_28px_rgba(212,175,55,0.28)]"
+            className="mx-auto mb-4 h-44 w-auto object-contain drop-shadow-[0_0_32px_rgba(212,175,55,0.30)]"
           />
           <h1 className="text-xl font-bold tracking-tight">Triad T AI Command Center</h1>
           <p className="mt-1 text-sm text-muted-foreground">
