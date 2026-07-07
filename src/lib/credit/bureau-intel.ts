@@ -138,6 +138,22 @@ export const INTEL_CATEGORIES: IntelCategory[] = [
     legalBasis: "FCRA §1681i (procedure) · §1681c (10-yr limit Ch.7 / 7-yr Ch.13).",
   },
   {
+    id: "ic-secondary-cra",
+    category: "Secondary CRA Intelligence",
+    summary: "Consumer reporting agencies beyond Experian/Equifax/TransUnion.",
+    playbook:
+      "Disputes often must go to secondary CRAs too. LexisNexis (P.O. Box 105108, Atlanta, GA 30348) — data broker feeding insurers/employers/bureaus; demand wet-ink proof or deletion (FCRA §1681e(b), §1681i, §1681g). Early Warning Services (16552 N 90th St, Ste 100, Scottsdale, AZ 85260; 800-325-7775) — banking CRA behind account-opening decisions; dispute fraudulent deposit accounts. Others: SageStream/LexisNexis Risk, Innovis, ChexSystems. Use the app's Specialty Letters (Client → Strategy) to generate these.",
+    legalBasis: "FCRA §1681a(f) (CRA definition) · §1681e(b)/§1681i (accuracy + reinvestigation) · §605B (identity-theft block).",
+  },
+  {
+    id: "ic-identity-theft",
+    category: "Identity Theft Intelligence",
+    summary: "Fraudulent accounts opened in the client's name.",
+    playbook:
+      "For accounts the client never opened: file an Identity Theft Affidavit (sworn, penalty of perjury) + FTC Identity Theft Report (IdentityTheft.gov) + police report. Send with disputes to trigger a §605B block (blocked within 4 business days of a valid identity-theft report). Attach ID + proof of address. Generate the affidavit in the app (Client → Strategy → Specialty Letters).",
+    legalBasis: "FCRA §605B (block of information resulting from identity theft) · §605A (fraud alerts) · §609(e).",
+  },
+  {
     id: "ic-medical",
     category: "Medical Collection Intelligence",
     summary: "Healthcare debts in collection.",

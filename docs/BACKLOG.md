@@ -13,6 +13,8 @@ Status: 🔴 not started · 🟡 partial · ✅ done. Cross-ref: `SYSTEM_AUDIT.m
 - 🟡 **Auth (W2)** — see Auth section below for what's scaffolded vs deferred.
 - 🔴 **MyFreeScoreNow live report pull** — blocked on the real API endpoint (token model confirmed; endpoint URL still needed). CSV roster import works today.
 
+- ✅ **Specialty dispute letters** — LexisNexis, Early Warning Services, Identity Theft Affidavit generators (from owner's templates) in Client → Strategy; Secondary-CRA + Identity-Theft intel added to Bureau Intelligence. Source: docs/dispute-templates.md.
+
 ## Prolific Method (deepening)
 - 🔴 Round 2 (Method-of-Verification) + Round 3 (procedural) letter generators.
 - 🔴 "Letters sent" log per client → feed Round Tracking + dispute_rounds.
