@@ -5,6 +5,7 @@ import { FileWarning, Gavel, Phone, ScrollText, ShieldCheck, Wand2 } from "lucid
 
 import { PageHeader } from "@/components/shared/page-header";
 import { CopyButton } from "@/components/shared/copy-button";
+import { SpecialtyLetterGenerator } from "@/components/credit/specialty-letters";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -235,6 +236,10 @@ export default function DisputesPage() {
             </CardContent>
           </Card>
         )}
+      </div>
+
+      <div className="mt-6">
+        <SpecialtyLetterGenerator />
       </div>
     </div>
   );

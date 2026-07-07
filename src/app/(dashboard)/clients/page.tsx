@@ -68,7 +68,7 @@ import {
   fundingReadiness,
 } from "@/lib/credit/engine";
 import { importClient, importAllClients, importMemberListCSV, type ImportResult } from "@/lib/credit/myfreescorenow";
-import { lexisNexisLetter, earlyWarningLetter, identityTheftAffidavit, SPECIALTY_LETTERS, type SpecialtyLetterKey } from "@/lib/credit/letter-templates";
+import { SpecialtyLetterGenerator } from "@/components/credit/specialty-letters";
 import { AIPanel } from "@/components/ai/ai-panel";
 
 const inputCls =
@@ -664,9 +664,7 @@ function ClientDetail({
           ))}
 
           {/* Specialty letters — secondary CRAs + identity theft */}
-          <SpecialtyLetters client={client} negatives={negatives} address={
-            (personalInfo.find((p) => p.infoType === "address" && p.status === "current") ?? personalInfo.find((p) => p.infoType === "address"))?.value
-          } />
+          <SpecialtyLetterGenerator defaultClientId={client.id} lockClient />
         </TabsContent>
 
         {/* FUNDING READINESS */}
@@ -842,69 +840,3 @@ function ImportDialog({
   );
 }
 
-/* ───────────────────── Specialty dispute letters ───────────────────── */
-
-function SpecialtyLetters({
-  client,
-  negatives,
-  address,
-}: {
-  client: Client & Row;
-  negatives: NegativeAccount[];
-  address?: string;
-}) {
-  const [active, setActive] = useState<SpecialtyLetterKey | null>(null);
-  const [text, setText] = useState("");
-  const [copied, setCopied] = useState(false);
-
-  const items = negatives
-    .filter((n) => n.status !== "deleted" && n.status !== "paid")
-    .map((n) => ({ creditor: n.creditor, detail: `${String(n.accountType).replace("_", " ")}${n.balance ? ` · $${Number(n.balance).toLocaleString()}` : ""}` }));
-
-  function generate(key: SpecialtyLetterKey) {
-    const c = { name: fullName(client), address, phone: client.phone, email: client.email };
-    const out =
-      key === "lexisnexis" ? lexisNexisLetter(c, items)
-      : key === "earlywarning" ? earlyWarningLetter(c, items)
-      : identityTheftAffidavit(c, items);
-    setActive(key);
-    setText(out);
-    setCopied(false);
-  }
-
-  return (
-    <div className="rounded-lg border border-gold/30 bg-background/40 p-4">
-      <p className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-gold">Specialty Dispute Letters</p>
-      <p className="mb-3 text-xs text-muted-foreground">Beyond the 3 bureaus — secondary consumer reporting agencies + identity theft.</p>
-      <div className="mb-3 flex flex-wrap gap-2">
-        {SPECIALTY_LETTERS.map((l) => (
-          <button
-            key={l.key}
-            onClick={() => generate(l.key)}
-            title={l.desc}
-            className={cn(
-              "rounded-md border px-3 py-1.5 text-xs font-medium",
-              active === l.key ? "border-gold/50 bg-gold/15 text-gold" : "border-border text-muted-foreground hover:text-foreground",
-            )}
-          >
-            {l.label}
-          </button>
-        ))}
-      </div>
-      {text && (
-        <div className="rounded-lg border border-border bg-card">
-          <div className="flex items-center justify-between border-b border-border px-3 py-2">
-            <p className="text-xs font-semibold">{SPECIALTY_LETTERS.find((l) => l.key === active)?.label}</p>
-            <button
-              onClick={() => navigator.clipboard?.writeText(text).then(() => { setCopied(true); setTimeout(() => setCopied(false), 1500); }, () => {})}
-              className="rounded-md border border-border px-2 py-1 text-[11px] text-muted-foreground hover:text-gold"
-            >
-              {copied ? "Copied" : "Copy"}
-            </button>
-          </div>
-          <pre className="max-h-80 overflow-auto whitespace-pre-wrap px-3 py-2 text-[11px] leading-relaxed text-foreground/90">{text}</pre>
-        </div>
-      )}
-    </div>
-  );
-}

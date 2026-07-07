@@ -9,6 +9,7 @@
 import type { DiagnosisResult, FundingReadiness } from "@/lib/credit/engine";
 import type { CreditUtilization, Inquiry, NegativeAccount } from "@/lib/credit/types";
 import { BUREAU_PROFILES } from "@/lib/credit/bureau-intel";
+import { lexisNexisLetter, earlyWarningLetter, identityTheftAffidavit } from "@/lib/credit/letter-templates";
 import type { Phase } from "./types";
 
 export type ArtifactBlock =
@@ -79,6 +80,18 @@ function disputeLetters(ctx: ArtifactContext): ArtifactBlock[] {
       `verification (§1681i(a)(7)). Any item that cannot be fully verified with original documentation must be ` +
       `deleted (§1681i(a)(5)).\n\nSincerely,\n${name}`;
     letters.push({ type: "letter", bureau, address: addressFor(bureau), subject: `${bureau} — Round 1 Dispute`, body });
+  }
+
+  // Specialty letters — secondary CRAs + identity theft (auto when there are negatives).
+  if (open.length) {
+    const c = { name, address: ctx.address };
+    const items = open.map((n) => ({
+      creditor: n.creditor,
+      detail: `${String(n.accountType).replace("_", " ")}${n.balance ? ` · $${Number(n.balance).toLocaleString()}` : ""}`,
+    }));
+    letters.push({ type: "letter", bureau: "LexisNexis", address: "P.O. Box 105108, Atlanta, GA 30348", subject: "LexisNexis — Secondary CRA Dispute", body: lexisNexisLetter(c, items) });
+    letters.push({ type: "letter", bureau: "Early Warning Services", address: "16552 N 90th St, Ste 100, Scottsdale, AZ 85260", subject: "Early Warning Services — Bank/Deposit Dispute (use if identity theft)", body: earlyWarningLetter(c, items) });
+    letters.push({ type: "letter", bureau: "Identity Theft", address: "Attach to disputes / furnisher", subject: "Identity Theft Affidavit (for fraudulent accounts)", body: identityTheftAffidavit(c, items) });
   }
 
   if (!letters.length)
