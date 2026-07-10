@@ -50,7 +50,12 @@ Deno.serve(async (req) => {
     if (!key) return json({ ok: false, error: "ANTHROPIC_API_KEY not set." }, 400);
 
     const db = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
-    if (uploadId) await db.from("report_uploads").update({ processing_status: "processing" }).eq("id", uploadId);
+    // Best-effort status writes — never let a missing report_uploads table break extraction.
+    const setStatus = async (patch: Record<string, unknown>) => {
+      if (!uploadId) return;
+      try { await db.from("report_uploads").update(patch).eq("id", uploadId); } catch { /* ignore */ }
+    };
+    await setStatus({ processing_status: "processing" });
 
     const dl = await db.storage.from("credit-reports").download(storagePath);
     if (dl.error || !dl.data) return json({ ok: false, error: `Download failed: ${dl.error?.message}` }, 502);
@@ -85,20 +90,20 @@ Deno.serve(async (req) => {
     });
     if (!res.ok) {
       const detail = (await res.text()).slice(0, 400);
-      if (uploadId) await db.from("report_uploads").update({ processing_status: "error", processing_error: detail }).eq("id", uploadId);
+      await setStatus({ processing_status: "error", processing_error: detail });
       return json({ ok: false, error: `Anthropic ${res.status}: ${detail}` }, 502);
     }
     const out = await res.json();
     const textOut = (out.content ?? []).filter((b: { type: string }) => b.type === "text").map((b: { text: string }) => b.text).join("\n");
     const match = textOut.match(/\{[\s\S]*\}/);
     if (!match) {
-      if (uploadId) await db.from("report_uploads").update({ processing_status: "error", processing_error: "No JSON in AI output" }).eq("id", uploadId);
+      await setStatus({ processing_status: "error", processing_error: "No JSON in AI output" });
       return json({ ok: false, error: "Could not parse structured data.", rawText: textOut.slice(0, 500) }, 502);
     }
     let data;
     try { data = JSON.parse(match[0]); } catch { return json({ ok: false, error: "Invalid JSON from AI." }, 502); }
 
-    if (uploadId) await db.from("report_uploads").update({ processing_status: "extracted", metadata: data }).eq("id", uploadId);
+    await setStatus({ processing_status: "extracted", metadata: data });
     return json({ ok: true, data });
   } catch (e) {
     return json({ ok: false, error: e instanceof Error ? e.message : String(e) }, 500);
