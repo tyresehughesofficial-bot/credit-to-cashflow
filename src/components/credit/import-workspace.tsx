@@ -226,8 +226,14 @@ function UploadForm({ onClose, onCreated }: { onClose: () => void; onCreated: (i
         <div className="rounded-lg border border-gold/30 bg-gold/5 p-3">
           <p className="text-xs font-semibold text-gold">Review Extracted Data</p>
           <p className="text-[11px] text-muted-foreground">Nothing is saved until you confirm. Edit anything the parser got wrong.</p>
-          {err && <p className="mt-1 text-[11px] text-warning">{err}</p>}
         </div>
+        {err && (
+          <div className="rounded-lg border border-destructive/40 bg-destructive/10 p-3">
+            <p className="text-xs font-semibold text-destructive">Auto-extraction didn&apos;t run</p>
+            <p className="mt-1 text-[11px] text-foreground/90">{err}</p>
+            <p className="mt-1 text-[11px] text-muted-foreground">You can still enter the fields below manually and save — the AI diagnosis runs on the saved data.</p>
+          </div>
+        )}
 
         <Section title="Bureau Scores">
           <div className="grid grid-cols-3 gap-3">

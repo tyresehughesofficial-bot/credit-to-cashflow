@@ -72,18 +72,30 @@ export async function processReport(u: UploadResult, rawFile?: File): Promise<{ 
   if (isSupabaseConfigured) {
     const sb = createClient();
     if (sb) {
+      // If the file never made it to storage, extraction can't run.
+      if (u.error) {
+        const local = await localParse(u.fileType, rawFile);
+        if (local) return { ok: true, data: local };
+        return { ok: false, data: {}, error: `Upload to storage failed: ${u.error}. Create the private "credit-reports" bucket (run storage_credit_reports.sql), then retry.` };
+      }
       const { data, error } = await sb.functions.invoke("process-credit-report", {
         body: { storagePath: u.storagePath, fileType: u.fileType, filename: u.filename, uploadId: u.uploadId },
       });
       if (!error && data?.ok && data.data) return { ok: true, data: data.data as ExtractedData };
-      // fall through to local parse / empty skeleton
       const local = await localParse(u.fileType, rawFile);
       if (local) return { ok: true, data: local };
-      return { ok: false, data: {}, error: data?.error || error?.message || "Extraction unavailable — deploy process-credit-report + set ANTHROPIC_API_KEY, or fill the fields manually." };
+      // Explain the most common cause: function not deployed / secret / download.
+      const reason =
+        data?.error ||
+        (error?.message?.includes("Failed to fetch") || error?.message?.includes("not found")
+          ? "The process-credit-report function isn't deployed. Deploy it (Edge Functions → new function → process-credit-report, Verify JWT off) — it reuses ANTHROPIC_API_KEY."
+          : error?.message) ||
+        "Extraction unavailable.";
+      return { ok: false, data: {}, error: reason };
     }
   }
   const local = await localParse(u.fileType, rawFile);
-  return { ok: !!local, data: local ?? {}, error: local ? undefined : "Fill the extracted fields manually below." };
+  return { ok: !!local, data: local ?? {}, error: local ? undefined : "AI extraction needs Supabase + the process-credit-report function. Enter the fields manually below, or deploy it and re-upload." };
 }
 
 /** Minimal client-side parse for JSON (matching our schema); empty skeleton otherwise. */

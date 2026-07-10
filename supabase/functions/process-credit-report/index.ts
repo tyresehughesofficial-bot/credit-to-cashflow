@@ -58,7 +58,9 @@ Deno.serve(async (req) => {
 
     const type = String(fileType || filename?.split(".").pop() || "").toLowerCase();
     const content: unknown[] = [];
+    let isPdf = false;
     if (type === "pdf") {
+      isPdf = true;
       content.push({ type: "document", source: { type: "base64", media_type: "application/pdf", data: toBase64(bytes) } });
     } else if (["png", "jpg", "jpeg", "webp"].includes(type)) {
       const mt = type === "jpg" ? "jpeg" : type;
@@ -69,9 +71,11 @@ Deno.serve(async (req) => {
     }
     content.push({ type: "text", text: `Extract this credit report.\n${SCHEMA}` });
 
+    const headers: Record<string, string> = { "x-api-key": key, "anthropic-version": "2023-06-01", "content-type": "application/json" };
+    if (isPdf) headers["anthropic-beta"] = "pdfs-2024-09-25"; // explicit PDF support
     const res = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
-      headers: { "x-api-key": key, "anthropic-version": "2023-06-01", "content-type": "application/json" },
+      headers,
       body: JSON.stringify({
         model: ENV("CLAUDE_MODEL") || "claude-sonnet-4-6",
         max_tokens: 4096,
