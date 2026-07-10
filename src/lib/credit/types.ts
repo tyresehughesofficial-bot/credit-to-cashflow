@@ -62,6 +62,47 @@ export interface Client {
   externalId?: string;
   enrollmentStatus?: string;
   dateAdded?: string;
+  // Manual-entry extras
+  address?: string;
+  city?: string;
+  state?: string;
+  zip?: string;
+  dob?: string;
+  notes?: string;
+  program?: string;
+  startDate?: string;
+  assignedTo?: string;
+}
+
+/** report_uploads */
+export interface ReportUpload {
+  id: string;
+  clientId: string;
+  source?: string;
+  originalFilename?: string;
+  fileType?: string;
+  storagePath?: string;
+  uploadedAt?: string;
+  processingStatus?: string;
+  processingError?: string;
+  createdAt?: string;
+}
+
+/** tradelines */
+export interface Tradeline {
+  id: string;
+  clientId: string;
+  creditReportId?: string;
+  creditor: string;
+  accountType?: string;
+  accountNumberMasked?: string;
+  balance?: number;
+  creditLimit?: number;
+  paymentStatus?: string;
+  dateOpened?: string;
+  lastReported?: string;
+  bureau?: string;
+  isNegative?: boolean;
 }
 
 /** credit_reports */

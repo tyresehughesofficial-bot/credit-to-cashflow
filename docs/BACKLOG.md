@@ -15,6 +15,8 @@ Status: 🔴 not started · 🟡 partial · ✅ done. Cross-ref: `SYSTEM_AUDIT.m
 
 - ✅ **Specialty dispute letters** — LexisNexis, Early Warning Services, Identity Theft Affidavit generators (from owner's templates) in Client → Strategy; Secondary-CRA + Identity-Theft intel added to Bureau Intelligence. Source: docs/dispute-templates.md.
 
+- ✅ **Manual client + report upload** — Add Client (full manual form), Upload Report (PDF/CSV/JSON/TXT/PNG/JPG → private storage → process-credit-report Claude extraction → review-and-edit → save), source badges, Uploaded Files tab. New tables report_uploads/tradelines/report_processing_jobs + credit-reports bucket. MFSN untouched. SQL: report_uploads_schema.sql + storage_credit_reports.sql.
+
 ## Prolific Method (deepening)
 - 🔴 Round 2 (Method-of-Verification) + Round 3 (procedural) letter generators.
 - 🔴 "Letters sent" log per client → feed Round Tracking + dispute_rounds.

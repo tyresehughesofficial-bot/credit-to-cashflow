@@ -18,6 +18,7 @@ import {
   XCircle,
   RefreshCw,
   Upload,
+  FileUp,
 } from "lucide-react";
 
 import { PageHeader } from "@/components/shared/page-header";
@@ -67,12 +68,19 @@ import {
   recommendations,
   fundingReadiness,
 } from "@/lib/credit/engine";
-import { importClient, importAllClients, importMemberListCSV, type ImportResult } from "@/lib/credit/myfreescorenow";
+import { importAllClients, importMemberListCSV } from "@/lib/credit/myfreescorenow";
+import { reportSignedUrl } from "@/lib/credit/upload";
+import { type ReportUpload } from "@/lib/credit/types";
 import { SpecialtyLetterGenerator } from "@/components/credit/specialty-letters";
+import { ImportWorkspace } from "@/components/credit/import-workspace";
 import { AIPanel } from "@/components/ai/ai-panel";
 
-const inputCls =
-  "w-full rounded-md border border-border bg-background px-2.5 py-2 text-sm text-foreground outline-none focus:border-gold/50";
+const sourceLabel: Record<string, string> = {
+  myfreescorenow: "MFSN",
+  manual: "Manual",
+  disputefox: "DisputeFox",
+  csv: "CSV",
+};
 
 const statusVariant: Record<ClientStatus, "default" | "secondary" | "success" | "warning" | "muted"> = {
   lead: "muted",
@@ -114,8 +122,7 @@ export default function ClientCommandCenter() {
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [selectedId, setSelectedId] = useState<string | null>(CLIENT_SEED[0]?.id ?? null);
-  const [importing, setImporting] = useState(false);
-  const [lastImport, setLastImport] = useState<ImportResult | null>(null);
+  const [workspace, setWorkspace] = useState<null | "mfsn" | "manual" | "upload">(null);
   const [syncing, setSyncing] = useState(false);
   const [syncMsg, setSyncMsg] = useState<string | null>(null);
   const csvRef = useRef<HTMLInputElement>(null);
@@ -163,19 +170,25 @@ export default function ClientCommandCenter() {
         title="Client Command Center"
         description="Operational HQ — import from MyFreeScoreNow, read & analyze the tri-bureau report, diagnose health, generate the action plan & dispute strategy, and track every round."
         actions={
-          <>
+          <div className="flex flex-wrap items-center gap-2">
             <input ref={csvRef} type="file" accept=".csv" hidden onChange={handleCsv} />
+            <Button size="sm" onClick={() => setWorkspace("manual")}>
+              <UserPlus className="h-4 w-4" /> Add Client
+            </Button>
+            <Button size="sm" variant="outline" onClick={() => setWorkspace("upload")}>
+              <FileUp className="h-4 w-4" /> Upload Report
+            </Button>
+            <Button size="sm" variant="outline" onClick={() => setWorkspace("mfsn")}>
+              <Sparkles className="h-4 w-4" /> MyFreeScoreNow
+            </Button>
             <Button size="sm" variant="outline" onClick={() => csvRef.current?.click()}>
-              <Upload className="h-4 w-4" /> Import Member CSV
+              <Upload className="h-4 w-4" /> Member CSV
             </Button>
             <Button size="sm" variant="outline" onClick={handleSyncAll} disabled={syncing}>
               {syncing ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
-              Sync All (API)
+              Sync All
             </Button>
-            <Button size="sm" onClick={() => setImporting(true)}>
-              <UserPlus className="h-4 w-4" /> Import Client
-            </Button>
-          </>
+          </div>
         }
       />
 
@@ -230,7 +243,14 @@ export default function ClientCommandCenter() {
                     <AvatarFallback>{initials(fullName(c))}</AvatarFallback>
                   </Avatar>
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-medium">{fullName(c)}</p>
+                    <div className="flex items-center gap-1.5">
+                      <p className="truncate text-sm font-medium">{fullName(c)}</p>
+                      {c.source && (
+                        <span className="shrink-0 rounded border border-border px-1 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-muted-foreground">
+                          {sourceLabel[c.source] ?? c.source}
+                        </span>
+                      )}
+                    </div>
                     <p className="truncate text-xs text-muted-foreground">{c.email || c.phone || "—"}</p>
                   </div>
                   <div className="text-right">
@@ -271,51 +291,23 @@ export default function ClientCommandCenter() {
         )}
       </div>
 
-      {importing && (
-        <ImportDialog
-          onClose={() => setImporting(false)}
-          onImport={async (form) => {
-            const res = await importClient(form);
-            setSelectedId(res.clientId);
-            setLastImport(res);
-            setImporting(false);
-          }}
-        />
-      )}
+      <ImportWorkspace
+        open={workspace !== null}
+        initialMode={workspace ?? "manual"}
+        onClose={() => setWorkspace(null)}
+        onCreated={(id, note) => {
+          setSelectedId(id);
+          setWorkspace(null);
+          if (note) setSyncMsg(note);
+        }}
+      />
 
       {syncMsg && (
-        <div className="mb-6 flex items-start justify-between gap-3 rounded-xl border border-gold/30 bg-gold/5 p-4">
+        <div className="mt-6 flex items-start justify-between gap-3 rounded-xl border border-gold/30 bg-gold/5 p-4">
           <p className="text-sm">{syncMsg}</p>
           <button onClick={() => setSyncMsg(null)} className="text-muted-foreground hover:text-foreground">
             <X className="h-4 w-4" />
           </button>
-        </div>
-      )}
-
-      {lastImport && (
-        <div className="fixed bottom-4 right-4 z-50 max-w-sm rounded-xl border border-gold/30 bg-card p-4 shadow-gold">
-          <div className="flex items-start justify-between gap-3">
-            <div>
-              <p className="text-sm font-semibold">
-                Imported from MyFreeScoreNow{" "}
-                <Badge variant={lastImport.mode === "live" ? "success" : "secondary"} className="ml-1 align-middle">
-                  {lastImport.mode}
-                </Badge>
-              </p>
-              <p className="mt-1 text-xs text-muted-foreground">
-                {lastImport.counts.negatives} negatives · {lastImport.counts.inquiries} inquiries ·{" "}
-                {lastImport.counts.publicRecords} public records · {lastImport.counts.personalInfo} PII items
-              </p>
-              {lastImport.mode === "demo" && (
-                <p className="mt-1 text-[11px] text-muted-foreground">
-                  Demo data — set <span className="text-gold">MFSN_API_KEY</span> to pull live reports.
-                </p>
-              )}
-            </div>
-            <button onClick={() => setLastImport(null)} className="text-muted-foreground hover:text-foreground">
-              <X className="h-4 w-4" />
-            </button>
-          </div>
         </div>
       )}
     </div>
@@ -464,6 +456,9 @@ function ClientDetail({
           </TabsTrigger>
           <TabsTrigger value="funding">
             <Landmark className="mr-1.5 h-3.5 w-3.5" /> Funding
+          </TabsTrigger>
+          <TabsTrigger value="files">
+            <FileUp className="mr-1.5 h-3.5 w-3.5" /> Files
           </TabsTrigger>
           <TabsTrigger value="rounds">Rounds</TabsTrigger>
         </TabsList>
@@ -712,6 +707,11 @@ function ClientDetail({
         </TabsContent>
 
         {/* ROUNDS */}
+        {/* UPLOADED FILES */}
+        <TabsContent value="files">
+          <UploadedFiles clientId={client.id} />
+        </TabsContent>
+
         <TabsContent value="rounds">
           <RoundTracker clientId={client.id} rounds={rounds} onAddRound={onAddRound} />
         </TabsContent>
@@ -777,66 +777,46 @@ function RoundTracker({
   );
 }
 
-/* ───────────────────────── Import dialog ───────────────────────── */
+/* ───────────────────────── Uploaded files ───────────────────────── */
 
-function ImportDialog({
-  onClose,
-  onImport,
-}: {
-  onClose: () => void;
-  onImport: (form: { firstName: string; lastName: string; email?: string; phone?: string; myfreescorenowId?: string }) => Promise<void>;
-}) {
-  const [form, setForm] = useState({ firstName: "", lastName: "", email: "", phone: "", myfreescorenowId: "" });
-  const [loading, setLoading] = useState(false);
-  const set = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement>) => setForm({ ...form, [k]: e.target.value });
+function UploadedFiles({ clientId }: { clientId: string }) {
+  const uploads = useCollection<ReportUpload & Row>("report_uploads", []);
+  const rows = uploads.records.filter((u) => u.clientId === clientId);
+
+  async function view(u: ReportUpload) {
+    if (!u.storagePath) return;
+    const url = await reportSignedUrl(u.storagePath);
+    if (url) window.open(url, "_blank");
+    else alert("Signed URL unavailable — deploy the credit-reports bucket, or the file was only stored locally.");
+  }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative z-10 w-full max-w-md rounded-xl border border-border bg-card p-5 shadow-gold">
-        <div className="mb-1 flex items-center justify-between">
-          <h3 className="text-sm font-semibold">Import from MyFreeScoreNow</h3>
-          <button onClick={onClose} className="text-muted-foreground hover:text-foreground">
-            <X className="h-4 w-4" />
-          </button>
-        </div>
-        <p className="mb-4 text-xs text-muted-foreground">
-          Pulls the member&apos;s tri-bureau report, runs analysis, and seeds the command profile. Uses the live
-          <span className="text-gold"> mfsn_import</span> Edge Function when configured, otherwise a demo import.
+    <div className="space-y-2">
+      {rows.length === 0 && (
+        <p className="rounded-xl border border-border bg-card px-4 py-8 text-center text-xs text-muted-foreground">
+          No uploaded reports. Use <span className="text-gold">Upload Report</span> to add one.
         </p>
-        <div className="space-y-3">
-          <div className="grid grid-cols-2 gap-3">
-            <input className={inputCls} placeholder="First name" value={form.firstName} onChange={set("firstName")} />
-            <input className={inputCls} placeholder="Last name" value={form.lastName} onChange={set("lastName")} />
+      )}
+      {rows.map((u) => (
+        <div key={u.id} className="flex items-center justify-between rounded-xl border border-border bg-card px-4 py-2.5">
+          <div className="min-w-0">
+            <p className="truncate text-sm font-medium">{u.originalFilename || "report"}</p>
+            <p className="text-xs text-muted-foreground">
+              {String(u.fileType || "").toUpperCase()} · {u.source} · {u.uploadedAt ? new Date(u.uploadedAt).toLocaleDateString() : "—"}
+            </p>
           </div>
-          <input className={inputCls} placeholder="Email" value={form.email} onChange={set("email")} />
-          <input className={inputCls} placeholder="Phone" value={form.phone} onChange={set("phone")} />
-          <input
-            className={inputCls}
-            placeholder="MyFreeScoreNow member ID (optional)"
-            value={form.myfreescorenowId}
-            onChange={set("myfreescorenowId")}
-          />
+          <div className="flex items-center gap-2">
+            <Badge variant={u.processingStatus === "saved" ? "success" : u.processingStatus === "error" ? "destructive" : "secondary"}>
+              {u.processingStatus || "uploaded"}
+            </Badge>
+            {u.storagePath && (
+              <button onClick={() => view(u)} className="rounded-md border border-border px-2 py-1 text-[11px] text-muted-foreground hover:text-gold">
+                View
+              </button>
+            )}
+          </div>
         </div>
-        <div className="mt-5 flex justify-end gap-2">
-          <Button variant="outline" size="sm" onClick={onClose}>
-            Cancel
-          </Button>
-          <Button
-            size="sm"
-            disabled={loading || !form.firstName.trim()}
-            onClick={async () => {
-              setLoading(true);
-              await onImport(form);
-              setLoading(false);
-            }}
-          >
-            {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <UserPlus className="h-4 w-4" />}
-            Import & Analyze
-          </Button>
-        </div>
-      </div>
+      ))}
     </div>
   );
 }
-
