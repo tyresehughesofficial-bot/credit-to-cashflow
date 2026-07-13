@@ -85,11 +85,8 @@ Deno.serve(async (req) => {
       body: JSON.stringify({
         model: ENV("CLAUDE_MODEL") || "claude-sonnet-4-6",
         max_tokens: 8192,
-        system: "You are a precise credit-report data extractor. Output ONLY a single JSON object — no markdown, no commentary. Never fabricate values; use null when unknown.",
-        messages: [
-          { role: "user", content },
-          { role: "assistant", content: "{" }, // prefill forces clean JSON, no prose/fences
-        ],
+        system: "You are a precise credit-report data extractor. Output ONLY a single JSON object starting with { and ending with } — no markdown, no code fences, no commentary before or after. Never fabricate values; use null when unknown.",
+        messages: [{ role: "user", content }],
       }),
     });
     if (!res.ok) {
@@ -99,8 +96,8 @@ Deno.serve(async (req) => {
     }
     const out = await res.json();
     let textOut = (out.content ?? []).filter((b: { type: string }) => b.type === "text").map((b: { text: string }) => b.text).join("");
-    // Reattach the prefill and clean any stray fences.
-    textOut = ("{" + textOut).replace(/```json/gi, "").replace(/```/g, "").trim();
+    // Strip any markdown fences/prose wrappers.
+    textOut = textOut.replace(/```json/gi, "").replace(/```/g, "").trim();
 
     let data: unknown = null;
     // 1) direct parse; 2) outermost {...}; 3) trim to last closing brace (repairs truncation).
