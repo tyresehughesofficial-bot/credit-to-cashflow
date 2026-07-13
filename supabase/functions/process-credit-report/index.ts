@@ -84,9 +84,12 @@ Deno.serve(async (req) => {
       headers,
       body: JSON.stringify({
         model: ENV("CLAUDE_MODEL") || "claude-sonnet-4-6",
-        max_tokens: 4096,
-        system: "You are a precise credit-report data extractor. Output strict JSON only. Never fabricate values; use null when unknown.",
-        messages: [{ role: "user", content }],
+        max_tokens: 8192,
+        system: "You are a precise credit-report data extractor. Output ONLY a single JSON object — no markdown, no commentary. Never fabricate values; use null when unknown.",
+        messages: [
+          { role: "user", content },
+          { role: "assistant", content: "{" }, // prefill forces clean JSON, no prose/fences
+        ],
       }),
     });
     if (!res.ok) {
@@ -95,14 +98,27 @@ Deno.serve(async (req) => {
       return json({ ok: false, error: `Anthropic ${res.status}: ${detail}` }, 502);
     }
     const out = await res.json();
-    const textOut = (out.content ?? []).filter((b: { type: string }) => b.type === "text").map((b: { text: string }) => b.text).join("\n");
-    const match = textOut.match(/\{[\s\S]*\}/);
-    if (!match) {
-      await setStatus({ processing_status: "error", processing_error: "No JSON in AI output" });
-      return json({ ok: false, error: "Could not parse structured data.", rawText: textOut.slice(0, 500) }, 502);
+    let textOut = (out.content ?? []).filter((b: { type: string }) => b.type === "text").map((b: { text: string }) => b.text).join("");
+    // Reattach the prefill and clean any stray fences.
+    textOut = ("{" + textOut).replace(/```json/gi, "").replace(/```/g, "").trim();
+
+    let data: unknown = null;
+    // 1) direct parse; 2) outermost {...}; 3) trim to last closing brace (repairs truncation).
+    const tryParse = (s: string) => { try { return JSON.parse(s); } catch { return null; } };
+    data = tryParse(textOut);
+    if (!data) {
+      const m = textOut.match(/\{[\s\S]*\}/);
+      if (m) data = tryParse(m[0]);
     }
-    let data;
-    try { data = JSON.parse(match[0]); } catch { return json({ ok: false, error: "Invalid JSON from AI." }, 502); }
+    if (!data) {
+      const last = textOut.lastIndexOf("}");
+      if (last > 0) data = tryParse(textOut.slice(0, last + 1));
+    }
+    if (!data) {
+      const stop = out.stop_reason;
+      await setStatus({ processing_status: "error", processing_error: "Invalid/again JSON" });
+      return json({ ok: false, error: `Could not parse the report JSON${stop === "max_tokens" ? " (response was truncated — the report may be very large)" : ""}. Try again or enter manually.`, rawText: textOut.slice(0, 400) }, 502);
+    }
 
     await setStatus({ processing_status: "extracted", metadata: data });
     return json({ ok: true, data });
