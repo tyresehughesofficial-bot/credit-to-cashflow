@@ -82,15 +82,20 @@ export async function processReport(u: UploadResult, rawFile?: File): Promise<{ 
         body: { storagePath: u.storagePath, fileType: u.fileType, filename: u.filename, uploadId: u.uploadId },
       });
       if (!error && data?.ok && data.data) return { ok: true, data: data.data as ExtractedData };
+      // Read the function's ACTUAL error body (supabase-js hides it behind a generic message).
+      let serverErr: string | undefined;
+      try {
+        const ctx = (error as unknown as { context?: Response })?.context;
+        if (ctx && typeof ctx.json === "function") {
+          const body = await ctx.json();
+          serverErr = body?.error ?? body?.rawText;
+        }
+      } catch {
+        /* ignore */
+      }
       const local = await localParse(u.fileType, rawFile);
       if (local) return { ok: true, data: local };
-      // Explain the most common cause: function not deployed / secret / download.
-      const reason =
-        data?.error ||
-        (error?.message?.includes("Failed to fetch") || error?.message?.includes("not found")
-          ? "The process-credit-report function isn't deployed. Deploy it (Edge Functions → new function → process-credit-report, Verify JWT off) — it reuses ANTHROPIC_API_KEY."
-          : error?.message) ||
-        "Extraction unavailable.";
+      const reason = data?.error || serverErr || error?.message || "Extraction unavailable.";
       return { ok: false, data: {}, error: reason };
     }
   }

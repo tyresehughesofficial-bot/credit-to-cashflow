@@ -76,8 +76,9 @@ Deno.serve(async (req) => {
     }
     content.push({ type: "text", text: `Extract this credit report.\n${SCHEMA}` });
 
+    // PDF support is GA on current Claude models — no beta header needed.
     const headers: Record<string, string> = { "x-api-key": key, "anthropic-version": "2023-06-01", "content-type": "application/json" };
-    if (isPdf) headers["anthropic-beta"] = "pdfs-2024-09-25"; // explicit PDF support
+    void isPdf;
     const res = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
       headers,
